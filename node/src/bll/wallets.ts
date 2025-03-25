@@ -1,6 +1,8 @@
 import { ObjectId, Types } from "mongoose";
 import Wallets, { IWalletModel } from "../models/wallet-model";
 import { ClientError, UserModel } from "../models";
+import { Service } from "../services/WalletBaseService";
+import WalletServiceFactory from "../services/WalletServiceFactory";
 
 export enum CoinTypes {
   TRX = "TRX",
@@ -31,6 +33,14 @@ class WalletsLogic {
 
     return Wallets.findOne({ user_id, name: coin }).exec();
   };
+
+  async createWallet(user_id: string, coin: CoinTypes) {
+    const service = WalletServiceFactory.createService(coin);
+    console.log({service});
+    const wallet = await service.createWallet(user_id);
+    console.log({wallet});
+    return wallet;
+  }
 };
 
 const walletsLogic = new WalletsLogic();

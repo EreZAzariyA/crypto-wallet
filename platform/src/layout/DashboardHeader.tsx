@@ -21,7 +21,7 @@ const { Header } = Layout;
 const DashboardHeader = (props: DashboardHeaderProps) => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  const { user } = useAppSelector((state) => state.auth);
+  const { user_id } = useAppSelector((state) => state.auth);
   const { pathname } = useLocation();
   const [current, setCurrent] = useState<string>('1');
   const [isOpen, setIsOpen] = useState(false);
@@ -32,16 +32,13 @@ const DashboardHeader = (props: DashboardHeaderProps) => {
     const currentLocation = locationArray[1];
     setCurrent(currentLocation);
   }, [pathname]);
-
-  useEffect(() => {
-  }, []);
   
   useEffect(() => {
-    if (user._id) {
-      socketIo.sendHandshake(user._id);
-      dispatch(getUserWalletsAction({ user_id: user._id.toString() }));
+    if (user_id) {
+      dispatch(getUserWalletsAction(user_id));
+      socketIo.sendHandshake(user_id);
     }
-  }, [dispatch, user]);
+  }, [dispatch, user_id]);
 
   const onClick: MenuProps['onClick'] = async (e) => {
     if (e.key === 'sign-out') {

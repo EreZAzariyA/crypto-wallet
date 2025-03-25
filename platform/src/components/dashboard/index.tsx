@@ -1,17 +1,23 @@
 import { Button, Flex, Space, Typography } from "antd";
 import "./Dashboard.css";
 import { useTranslation } from "react-i18next";
-import { useAppSelector } from "../../redux/store";
+import { useAppDispatch, useAppSelector } from "../../redux/store";
 import { SupportedCoins } from "../../utils/helpers";
 import { CoinsType } from "../../utils/enums";
+import { createWalletAction } from "../../redux/actions/wallets-actions";
 
 const Dashboard = () => {
   const { t } = useTranslation();
+  const dispatch = useAppDispatch();
   const { wallets } = useAppSelector((state) => state.wallets);
-  const { user } = useAppSelector((state) => state.auth);
+  const { user_id } = useAppSelector((state) => state.auth);
 
   const createWallet = async (coin: CoinsType) => {
-    console.log({ coin, user: user._id });
+    try {
+      await dispatch(createWalletAction({ user_id, coin })).unwrap();
+    } catch (error) {
+      console.log({ error });
+    }
   }
 
   return (

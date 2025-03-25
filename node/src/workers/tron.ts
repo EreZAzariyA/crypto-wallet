@@ -13,8 +13,7 @@ const updateUsersBalance = async () => {
 
     for (const wallet of tronWallets) {
       const walletBalance = await tronLogic.getBalance(wallet.address.base58);
-      console.log(wallet.walletBalance, walletBalance);
-      
+
       if (wallet.walletBalance !== walletBalance) {
         wallet.walletBalance = walletBalance;
         wallet.save();
@@ -23,7 +22,7 @@ const updateUsersBalance = async () => {
       }
     }
   }
-}
+};
 
 export const tronJob = cron.schedule("*/30 * * * * *", async () => {
   console.log("Checking balance for wallets", new Date().toLocaleString());

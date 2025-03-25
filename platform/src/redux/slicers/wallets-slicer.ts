@@ -1,6 +1,6 @@
 import { ActionReducerMapBuilder, createSlice, SerializedError } from '@reduxjs/toolkit'
 import { WalletModel } from '../../models';
-import { getUserWalletsAction } from '../actions/wallets-actions';
+import { createWalletAction, getUserWalletsAction } from '../actions/wallets-actions';
 
 export interface WalletsState {
   wallets: Record<string, WalletModel>;
@@ -20,24 +20,46 @@ const extraReducers = (builder: ActionReducerMapBuilder<WalletsState>) => {
     ...state,
     loading: true,
   }))
-    .addCase(getUserWalletsAction.rejected, (state, action) => ({
+  .addCase(getUserWalletsAction.rejected, (state, { error }) => ({
+    ...state,
+    loading: false,
+    error: error
+  }))
+  .addCase(getUserWalletsAction.fulfilled, (state, { payload }) => {
+    const userWallets: Record<string, WalletModel> = {};
+    payload.forEach((wallet) => {
+      userWallets[wallet.name] = wallet;
+    });
+
+    return {
       ...state,
       loading: false,
-      error: action.error
-    }))
-    .addCase(getUserWalletsAction.fulfilled, (state, action) => {
-      const userWallets: Record<string, WalletModel> = {};
-      action.payload.forEach((wallet) => {
-        userWallets[wallet.name] = wallet;
-      })
+      error: null,
+      wallets: userWallets
+    }
+  });
 
-      return {
-        ...state,
-        loading: false,
-        error: null,
-        wallets: userWallets
-      }
-    });
+  builder.addCase(createWalletAction.pending, (state) => ({
+    ...state,
+    loading: true
+  }))
+  .addCase(createWalletAction.rejected, (state, { error}) => ({
+    ...state,
+    loading: false,
+    error: error
+  }))
+  .addCase(createWalletAction.fulfilled, (state, { payload, meta }) => {
+    const wallets = {
+      ...state.wallets,
+      [meta.arg.coin]: payload
+    };
+
+    return {
+      ...state,
+      loading: false,
+      wallets
+    }
+  })
 };
 
 const walletsSlicer = createSlice({

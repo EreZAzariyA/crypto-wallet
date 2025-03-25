@@ -1,7 +1,6 @@
 import express, { NextFunction, Request, Response } from "express";
 import { UserModel, CredentialsModel } from "../models";
 import authLogic from "../bll/auth-logic";
-import config from "../utils/config";
 
 const router = express.Router();
 
@@ -19,12 +18,8 @@ router.post("/signin", async (req: Request, res: Response, next: NextFunction) =
   try {
     const credentials = new CredentialsModel(req.body);
     const { token, user_id } = await authLogic.signin(credentials);
-    res.cookie('token', token, {
-      httpOnly: config.isProduction,
-      maxAge: config.loginExpiresIn,
-      secure: true
-    });
-    res.sendStatus(201);
+    (req.session as any).token = token;
+    res.status(201).json(user_id);
   } catch (err: any) {
     next(err);
   }
@@ -32,10 +27,10 @@ router.post("/signin", async (req: Request, res: Response, next: NextFunction) =
 
 router.post("/logout", async (req: Request, res: Response, next: NextFunction) => {
   try {
-    res.clearCookie('token', {
-      httpOnly: config.isProduction,
-      maxAge: 0,
-      secure: true
+    req.session.destroy((err) => {
+      if (err) {
+        return res.status(500).send('Could not log out');
+      }
     });
     res.sendStatus(201);
   } catch (err: any) {

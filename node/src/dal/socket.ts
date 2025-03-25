@@ -1,7 +1,7 @@
 import { Server as SocketServer, Socket } from "socket.io";
 import { Server as HttpServer } from "http";
 import config from "../utils/config";
-import { UserModel } from "../models";
+import { ClientError, UserModel } from "../models";
 
 const options = {
   cors: {
@@ -13,25 +13,28 @@ class SocketIo {
   public static socket: SocketIo;
   public io: SocketServer
 
-  public users: Record<string, string>;
+  public users: Record<string, string> = {};
 
   constructor (httpServer: HttpServer) {
     SocketIo.socket = this;
-    this.users = {};
     this.io = new SocketServer(httpServer, options);
-    this.io.sockets.adapter
     this.io.on('connect', this.startListeners);
   }
 
   startListeners = (socket: Socket) => {
-    console.log(Array.from(this.io.sockets.adapter.rooms));
-    console.log("One client has been connected...", socket.id);
+    socket.on('user-connected', (user_id: string) => {
+      console.log(`User ${user_id} connected...`);
+      this.users[user_id] = socket.id;
+      this.joinRoom(socket, user_id);
+    })
 
     socket.on('handshake', async (user_id, callback) => {
       const user = await UserModel.findById(user_id).exec();
-      const response = `Hello ${user.profile?.first_name}, handshake completed. ${socket.id}`;
-      socket.join(user_id);
-      console.log(`Room for ${user_id} created`);
+      if (!user) {
+        throw new ClientError(400, 'User not found');
+      }
+      const response = `Hello ${user.emails[0].email}, handshake completed. ${socket.id}`;
+      console.log(`Room for ${user_id} created with socket ${socket.id}`);
       callback(response);
     });
 
@@ -42,22 +45,6 @@ class SocketIo {
         delete this.users[user_id];
       }
     });
-
-    socket.on('disconnect', () => {
-      console.info('Disconnect received from: ' + socket.id);
-    });
-  };
-
-  // emitWalletBalance(user_id: string, wallet: IWalletModel) {
-  //   const socketId = this.sockets[user_id];
-  //   if (socketId) {
-  //     this.socket.to(socketId).emit('wallet-balance', wallet);
-  //   }
-  // };
-
-
-  getUserIdFromSocketID = (socketId: string) => {
-    return Object.keys(this.users).find((socket) => socket === socketId);
   };
 
   sendMessage(name: string, to: string, payload?: Object) {
@@ -67,7 +54,6 @@ class SocketIo {
 
   joinRoom(socket: Socket, user_id: string) {
     socket.join(user_id);
-    console.log(socket.rooms.keys);
   }
 };
 

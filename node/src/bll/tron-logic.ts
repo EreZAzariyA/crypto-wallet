@@ -3,10 +3,12 @@ import { tronWeb } from "../dal";
 import { ClientError, UserModel } from "../models";
 import { IWalletModel } from "../models/wallet-model";
 import walletsLogic, { CoinTypes } from "./wallets";
-import tronService from "../services/tronService";
+import { Service } from "../services/WalletBaseService";
+import WalletServiceFactory from "../services/WalletServiceFactory";
 
 class TronLogic {
-  private coin: CoinTypes = CoinTypes.TRX;
+  protected coin = CoinTypes.TRX;
+  private service: Service = WalletServiceFactory.createService(CoinTypes.TRX);
 
   async createWallet(user_id: string): Promise<IWalletModel> {
     const wallet = await this.getWallet(user_id);
@@ -15,7 +17,7 @@ class TronLogic {
       return wallet;
     }
 
-    const newWallet = await tronService.createWallet(user_id);
+    const newWallet = await this.service.createWallet(user_id);
     if (!newWallet) {
       throw new ClientError(500, 'TronLogic.createWallet[Warn]: Could not create address');
     }

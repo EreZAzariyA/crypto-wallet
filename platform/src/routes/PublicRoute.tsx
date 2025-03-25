@@ -8,9 +8,9 @@ interface PublicRouteProps {
 
 const PublicRoute = (props: PublicRouteProps) => {
   const location = useLocation();
-  const { token } = useAppSelector((state) => state.auth);
+  const { user_id } = useAppSelector((state) => state.auth);
 
-  if (!!token) {
+  if (user_id) {
     return <Navigate to={'/'} state={location} />
   }
 

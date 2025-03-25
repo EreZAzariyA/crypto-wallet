@@ -15,37 +15,35 @@ class JWTServices {
   public createNewToken(data: any, customExpiresIn?: number): string {
     const token = jwt.sign(data, this.secretKey, { expiresIn: customExpiresIn || (config.loginExpiresIn / 1000) });
     return token;
-  };  
+  };
 
   public verifyToken(request: Request): Promise<boolean> {
     return new Promise((resolve, reject) => {
       try {
-        const { token } = request.cookies;
-        console.log(token);
-        
-        // if (!token) {
-        //   const error = new ClientError(401, 'No token provide');
-        //   reject(error);
-        // }
+        const session = request.session;
+        const token = (session as any).token;
+        if (!token) {
+          const error = new ClientError(401, 'No token provide');
+          reject(error);
+        }
 
-        // jwt.verify(token, this.secretKey, async (err: VerifyErrors, decoded: IUserModel) => {
-        //   if (err) {
-        //     const error = new ClientError(401, ErrorMessages.TOKEN_EXPIRED);
-        //     reject(error);
-        //   }
+        jwt.verify(token, this.secretKey, async (err: VerifyErrors, decoded: IUserModel) => {
+          if (err) {
+            const error = new ClientError(401, ErrorMessages.TOKEN_EXPIRED);
+            reject(error);
+          }
 
-        //   const user: IUserModel = decoded;
-        //   if (user?._id && typeof user._id === 'string') {
-        //     const userPro = await UserModel.exists({ _id: user._id }).exec();
-        //     if (!userPro._id) {
-        //       const err = new ClientError(401, 'User profile not found. Try to reconnect.');
-        //       reject(err);
-        //     }
-        //   }
+          const user: IUserModel = decoded;
+          if (user?._id && typeof user._id === 'string') {
+            const userPro = await UserModel.exists({ _id: user._id }).exec();
+            if (!userPro._id) {
+              const err = new ClientError(401, 'User profile not found. Try to reconnect.');
+              reject(err);
+            }
+          }
 
-        //   resolve(!!token);
-        // });
-        resolve(true);
+          resolve(!!token);
+        });
       }
       catch (err: any) {
         reject(err);

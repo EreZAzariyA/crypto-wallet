@@ -23,18 +23,16 @@ export const signupAction = createAsyncThunk<string>(
   }
 );
 
-export const signinAction = createAsyncThunk<void, CredentialsModel>(
+export const signinAction = createAsyncThunk<{ user_id: string }, CredentialsModel>(
   AuthActions.SIGN_IN,
   async (credentials, thunkApi) => {
     try {
       if (!(credentials.email || credentials.password)) {
         throw new Error('Some fields are missing');
       }
-      await axios.post<void>(config.urls.auth.signIn, credentials);
-      // const token = response.data;
-      // if (token && typeof token === 'string') {
-      //   return thunkApi.fulfillWithValue(token);
-      // }
+      const res = await axios.post<string>(config.urls.auth.signIn, credentials);
+      const user_id = res.data;
+      return thunkApi.fulfillWithValue({ user_id });
     } catch (err) {
       return thunkApi.rejectWithValue(err);
     }

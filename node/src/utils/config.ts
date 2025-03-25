@@ -21,7 +21,8 @@ class DevelopmentConfig extends Config {
   public constructor() {
     super();
     this.isProduction = false;
-    this.loginExpiresIn = 3 * 60 * 60 * 1000;
+    // this.loginExpiresIn = 3 * 60 * 60 * 1000;
+    this.loginExpiresIn = 15 * 60 * 1000;
     this.mongoConnectionString = process.env.MONGO_CONNECTION_STRING;
     this.secretKey = 'secret';
     this.mongoConnectionString = "mongodb://127.0.0.1:27017/crypto";

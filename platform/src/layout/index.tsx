@@ -24,7 +24,7 @@ const DashboardView = () => {
   const location = useLocation();
   const { pathname } = location;
   const { isMobile } = useResize();
-  const { user } = useAppSelector((state) => state.auth);
+  const { user_id } = useAppSelector((state) => state.auth);
 
   const [isCollapsed, setIsCollapsed] = useState<boolean>(isMobile);
   const [current, setCurrent] = useState<string>('dashboard');
@@ -41,7 +41,7 @@ const DashboardView = () => {
     setCurrent(path);
   }, [pathname]);
 
-  const accountItems = user ? [
+  const accountItems = user_id ? [
     getMenuItem(
       <Link to='/profile'>{t('menu.account.1')}</Link>,
       'profile',
@@ -67,6 +67,12 @@ const DashboardView = () => {
       <FaAddressCard size={Sizes.SUB_MENU_ICON} />,
       undefined, style
     ),
+    getMenuItem(
+      t('menu.account.5'),
+      'sign-out',
+      <AiOutlineLogout color={Colors.DANGER} size={Sizes.SUB_MENU_ICON} />,
+      undefined, style
+    )
   ];
 
   const items: MenuItem[] = [

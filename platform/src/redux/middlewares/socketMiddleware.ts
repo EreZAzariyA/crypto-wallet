@@ -6,8 +6,8 @@ const socketMiddleware: Middleware = (store) => {
   const { dispatch, getState } = store;
   return (next) => (action: any) => {
     const socket = socketIo.socket;
-    const { token } = getState().auth;
-    socket.auth = { token };
+    const { user_id } = getState().auth;
+    socket.auth = { user_id };
 
     socket.on('wallet-balance', ({ coin, wallet }) => {
       dispatch(updateAddress({ coin, wallet }));
@@ -16,6 +16,7 @@ const socketMiddleware: Middleware = (store) => {
 
     socket.io.on('reconnect', () => {
       console.log('Server reconnected...');
+      socketIo.sendHandshake(user_id);
     });
     socket.io.on('reconnect_error', (error) => {
       console.log(`Server reconnect error - ${error?.message}.`);

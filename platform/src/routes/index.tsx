@@ -1,6 +1,6 @@
 import { Navigate, RouteObject, createBrowserRouter } from "react-router-dom";
-import PublicRoute from "./PublicRoute";
 import PrivateRoute from "./PrivateRoute";
+import PublicRoute from "./PublicRoute";
 import DashboardView from "../layout";
 import AuthView from "../layout/AuthView";
 import SignIn from "../components/auth/sign-in";
@@ -39,11 +39,11 @@ const authRoutes: RouteObject[] = [
       },
       {
         path: "sign-in",
-        element: <PublicRoute element={<SignIn />} />,
+        element: <SignIn />,
       },
       {
         path: "sign-up",
-        element: <PublicRoute element={<SignUp />} />,
+        element: <SignUp />,
       },
       {
         path: "*",

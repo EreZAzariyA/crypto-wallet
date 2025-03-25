@@ -1,10 +1,11 @@
 import { ClientError } from "../models";
-import Wallets, { IWalletModel } from "../models/wallet-model";
+import { IWalletModel } from "../models/wallet-model";
 import { tronWeb } from "../dal";
 import { CoinTypes } from "../bll/wallets";
 import config from "../utils/config";
+import WalletBaseService from "./WalletBaseService";
 
-class TronService {
+class TronService extends WalletBaseService {
   public coin: CoinTypes = CoinTypes.TRX;
 
   async createWallet(user_id: string): Promise<IWalletModel> {
@@ -17,23 +18,11 @@ class TronService {
     }
 
     if (wallet.publicKey && wallet.address && wallet.address.hex) {
-      const newWallet = new Wallets({
-        user_id,
-        name: this.coin,
-        ...wallet
-      });
-
-      const errors = newWallet.validateSync();
-      if (errors) {
-        throw new ClientError(500, errors.message);
-      }
-
-      return newWallet.save();
+      return this.saveWallet(user_id, wallet);
     }
 
     return wallet;
-  }
+  };
 };
 
-const tronService = new TronService();
-export default tronService;
+export default TronService;

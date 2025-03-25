@@ -7,6 +7,7 @@ abstract class Config {
       logout: ""
     },
     wallet: {
+      createWallet: "",
       getWallets: "",
     }
   };
@@ -20,6 +21,7 @@ abstract class Config {
         logout: baseUrl + "auth/logout",
       },
       wallet: {
+        createWallet: baseUrl + 'wallet/create-wallet',
         getWallets: baseUrl +  "wallet/get-wallets"
       }
     }
