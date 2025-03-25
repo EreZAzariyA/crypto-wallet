@@ -1,0 +1,24 @@
+.page-container.dashboard .dashboard-second .ant-card-body {
+  padding: 0;
+  overflow: hidden;
+}
+
+.page-container.dashboard .dashboard-second .ant-card-body .ant-table-container,
+.page-container.dashboard .dashboard-second .ant-card-body .ant-table th {
+  border-radius: 0;
+}
+
+.page-container.dashboard .dashboard-third .ant-card-body {
+  width: 100%;
+}
+.page-container.dashboard .dashboard-third .ant-card-body .credit-cards {
+  width: 100%;
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  overflow: auto;
+  column-gap: 20px;
+}
+.page-container.dashboard .dashboard-third .ant-card-body .credit-cards.empty {
+  justify-content: center;
+}

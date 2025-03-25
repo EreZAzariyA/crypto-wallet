@@ -1,0 +1,24 @@
+.main-layout {
+  min-height: 100vh;
+}
+
+.main-layout .site-layout {
+  padding: 0.5rem 1rem 20px;
+  background: var(--light-grey);
+}
+
+.menu-btn {
+  border-radius: 0;
+  font-size: 26px;
+  background-color: var(--bright-blue);
+  height: 70px;
+  width: 50px;
+
+  display: flex;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.dark-theme .menu-btn {
+  background-color: var(--bg-dark);
+}

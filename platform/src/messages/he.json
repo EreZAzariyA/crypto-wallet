@@ -1,0 +1,103 @@
+{
+  "menu": {
+    "dashboard": "דף הבית",
+    "transactions": "עסקות",
+    "creditCards": "כרטיסי אשראי",
+    "categories": "קטגוריות",
+    "bankAccount": "חשבון בנק",
+    "profile": "פרופיל",
+    "account": [
+      "חשבון",
+      "פרופיל",
+      "מועדפים",
+      "כניסה",
+      "הרשמה",
+      "יציאה"
+    ]
+  },
+  "pages": {
+    "dashboard": "דף הבית",
+    "transactions": "עסקות",
+    "creditCards": "כרטיסי אשראי",
+    "categories": "קטגוריות",
+    "bankAccount": "חשבון בנק",
+    "profile": "פרופיל"
+  },
+  "dashboard": {
+    "first": [
+      "מצב החשבון שלך",
+      "יתרת חשבון",
+      "כרטיסי אשראי",
+      "ניירות ערך",
+      "פקדונות וחסכונות",
+      "הלוואות",
+      "דוח חודשי"
+    ],
+    "second": [
+      "תנועות אחרונות בחשבון",
+      "עוד תנועות"
+    ],
+    "third": [
+      "כרטיסי אשראי"
+    ]
+  },
+  "transactions": {
+    "table": {
+      "header": {
+        "date": "תאריך",
+        "category": "קטגוריה",
+        "description": "תיאור",
+        "amount": "סכום",
+        "chargedAmount": "סכום שחויב",
+        "cardNumber": "מס' כרטיס",
+        "status": "סטטוס",
+        "company": "חברה",
+        "actions": "פעולות"
+      }
+    },
+    "buttons": {
+      "add": "הוסף עסקה"
+    },
+    "status": {
+      "completed": "הסתיים",
+      "pending": "ממתין"
+    },
+    "transactionsType": {
+      "transactions": "עובר ושב",
+      "creditcards": "כרטיסי אשראי"
+    }
+  },
+  "categories": {
+    "table": {
+      "header": {
+        "category": "קטגוריה",
+        "total-spent": "סך-הכל",
+        "actions": "פעולות"
+      }
+    },
+    "buttons": {
+      "add": "הוסף קטגוריה"
+    }
+  },
+  "actions": [
+    "צפה בפרטים",
+    "הוסף עסקה",
+    "עריכה",
+    "מחיקה"
+  ],
+  "filters": {
+    "placeholders": [
+      "חיפוש לפי קטגוריה",
+      "חיפוש קטגוריה",
+      "חיפוש לפי סטטוס",
+      "חיפוש לפי טקסט",
+      "חיפוש לפי סוג"
+    ],
+    "reset": "איפוס"
+  },
+  "companies": {
+    "discount": "בנק דיסקונט",
+    "max": "מקס",
+    "visaCal": "ויזה כאל"
+  }
+}

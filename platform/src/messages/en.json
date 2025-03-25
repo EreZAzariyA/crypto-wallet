@@ -1,0 +1,105 @@
+{
+  "menu": {
+    "dashboard": "Dashboard",
+    "transactions": "Transactions",
+    "creditCards": "Credit Cards",
+    "categories": "Categories",
+    "bankAccount": "Bank Account",
+    "profile": "Profile",
+    "account": [
+      "Account",
+      "Profile",
+      "Favorites",
+      "Sign-In",
+      "Sign-Up",
+      "Sign-Out"
+    ]
+  },
+  "pages": {
+    "dashboard": "Dashboard",
+    "transactions": "Transactions",
+    "creditCards": "Credit Cards",
+    "categories": "Categories",
+    "bankAccount": "Bank Account",
+    "profile": "Profile"
+  },
+  "dashboard": {
+    "first": [
+      "Your Account Status",
+      "Account balance",
+      "Credit cards",
+      "Securities",
+      "Deposits and savings",
+      "Loans",
+      "Monthly report"
+    ],
+    "second": [
+      "Recent Movements",
+      "More movements",
+      "Credit cards"
+    ],
+    "third": [
+      "Credit Cards"
+    ]
+  },
+  "transactions": {
+    "table": {
+      "header": {
+        "date": "Date",
+        "category": "Category",
+        "description": "Description",
+        "amount": "Amount",
+        "chargedAmount": "Charged Amount",
+        "cardNumber": "Card Number",
+        "status": "Status",
+        "company": "Company",
+        "actions": "Actions"
+      }
+    },
+    "buttons": {
+      "add": "Add Transaction"
+    },
+    "status": {
+      "completed": "Completed",
+      "pending": "Pending"
+    },
+    "transactionsType": {
+      "transactions": "Account",
+      "creditcards": "Credit Cards"
+    }
+  },
+  "categories": {
+    "table": {
+      "header": {
+        "category": "Category",
+        "total-spent": "Total spent",
+        "actions": "Actions"
+      }
+    },
+    "buttons": {
+      "add": "Add Category"
+    }
+  },
+  "filters": {
+    "placeholders": [
+      "Search By Category",
+      "Search For Category",
+      "Search By Status",
+      "Search By Text",
+      "Search By Company",
+      "Search By Transaction Type"
+    ],
+    "reset": "Reset"
+  },
+  "actions": [
+    "See Details",
+    "Add Transaction",
+    "Edit",
+    "Delete"
+  ],
+  "companies": {
+    "discount": "Discount Bank",
+    "max": "Max",
+    "visaCal": "Visa Cal"
+  }
+}

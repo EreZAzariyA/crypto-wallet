@@ -1,0 +1,70 @@
+.auth-layout {
+  height: 100vh;
+  min-height: 600px;
+  text-align: center;
+  background-image: radial-gradient(circle at 17% 77%, rgba(17, 17, 17,0.04) 0%, rgba(17, 17, 17,0.04) 50%,rgba(197, 197, 197,0.04) 50%, rgba(197, 197, 197,0.04) 100%),radial-gradient(circle at 26% 17%, rgba(64, 64, 64,0.04) 0%, rgba(64, 64, 64,0.04) 50%,rgba(244, 244, 244,0.04) 50%, rgba(244, 244, 244,0.04) 100%),radial-gradient(circle at 44% 60%, rgba(177, 177, 177,0.04) 0%, rgba(177, 177, 177,0.04) 50%,rgba(187, 187, 187,0.04) 50%, rgba(187, 187, 187,0.04) 100%),linear-gradient(19deg, rgb(28, 117, 250),rgb(34, 2, 159));
+}
+
+.auth-header-container {
+  background: transparent;
+  display: flex;
+  padding: 15px 5px;
+}
+
+.auth-layout .ant-layout-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.auth-form-main-container,
+.auth-form-main-container .auth-form-inner-container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.auth-form {
+  position: relative;
+  z-index: 1;
+  width: min(100% - 10%, 550px);
+  color: var(--default-white);
+  min-height: 400px;
+
+  padding: 30px 20px 10px;
+  background: rgba(0, 0, 0, 0.345);
+  border-radius: 10px;
+  -webkit-box-shadow: 0px 0px 35px 3px rgba(0,0,0,0.5);
+  -moz-box-shadow: 0px 0px 35px 3px rgba(0,0,0,0.5);
+  box-shadow: 0px 0px 35px 3px rgba(0,0,0,0.5);
+}
+
+.auth-form-main-container.sign-in .auth-form {
+  width: min(100% - 10%, 350px);
+}
+
+.auth-form-main-container .auth-form .form-title {
+  font-size: 28px;
+  font-weight: 600;
+  line-height: 0;
+  color: var(--default-white);
+  text-decoration: underline;
+  text-underline-offset: 5px;
+}
+
+.auth-form-main-container.sign-up .auth-form .form-title {
+  display: block;
+  margin-bottom: 30px;
+}
+
+.auth-form-main-container .auth-form label {
+  color: var(--default-white);
+  font-size: 18px;
+}
+
+.auth-form .google-login {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+}
