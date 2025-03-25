@@ -5,6 +5,7 @@ import { CoinsType, ThemeColors } from "./enums";
 
 export const SupportedCoins = [
   CoinsType.TRX,
+  CoinsType.ETH
 ];
 
 

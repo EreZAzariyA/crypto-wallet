@@ -36,7 +36,7 @@ const Dashboard = () => {
               <h3>{coin}</h3>
               {wallet ? (
                 <Space size={0} direction="vertical">
-                  <p>Address: {wallet.address.base58}</p>
+                  <p>Address: {wallet.address}</p>
                   <p>Is testNet: {JSON.stringify(wallet.isTestNet)}</p>
                   <p>Balance: {wallet.walletBalance}</p>
                 </Space>

@@ -1,15 +1,12 @@
-import { Document, model, Schema } from "mongoose"
+import mongoose, { Document, model, Schema } from "mongoose"
 
 export interface IWalletModel extends Document {
   name: string;
-  user_id: string;
+  user_id: mongoose.Schema.Types.ObjectId;
   isTestNet: boolean;
   privateKey: string;
   publicKey: string;
-  address: {
-    base58: string;
-    hex: string
-  };
+  address: string;
   walletBalance: number;
 };
 
@@ -18,7 +15,10 @@ const WalletSchema = new Schema<IWalletModel>({
     type: String,
     required: true
   },
-  user_id: Schema.ObjectId,
+  user_id: {
+    type: Schema.ObjectId,
+    required: true
+  },
   isTestNet: {
     type: Boolean,
     required: true
@@ -30,20 +30,12 @@ const WalletSchema = new Schema<IWalletModel>({
   },
   publicKey: {
     type: String,
-    required: true,
     unique: true
   },
   address: {
-    base58: {
-      type: String,
-      required: true,
-      unique: true
-    },
-    hex: {
-      type: String,
-      required: true,
-      unique: true
-    }
+    type: String,
+    required: true,
+    unique: true
   },
   walletBalance: {
     type: Number,

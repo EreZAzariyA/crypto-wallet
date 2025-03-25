@@ -1,6 +1,7 @@
 import { CoinTypes } from "../bll/wallets";
 import { ClientError } from "../models";
-import TronService from "./tronService";
+import ETHService from "./EthService";
+import TronService from "./TronService";
 import { Service } from "./WalletBaseService";
 
 class WalletServiceFactory {
@@ -8,6 +9,8 @@ class WalletServiceFactory {
     switch (coin) {
       case CoinTypes.TRX:
         return new TronService();
+      case CoinTypes.ETH:
+        return new ETHService();
       default:
         throw new ClientError(400, `Unsupported coin type: ${coin}`);
     }

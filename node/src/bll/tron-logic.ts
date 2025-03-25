@@ -38,7 +38,7 @@ class TronLogic {
     let wallet: IWalletModel;
     wallet = await walletsLogic.getUserWalletByCoin(user._id.toString(), this.coin);
     if (!!wallet) {
-      const walletBalance = await this.getBalance(wallet.address.hex);
+      const walletBalance = await this.getBalance(wallet.address);
       wallet.walletBalance = walletBalance;
       wallet.save();
       return wallet;

@@ -1,6 +1,7 @@
 import { CoinTypes } from "../bll/wallets";
 import { ClientError } from "../models";
 import Wallets, { IWalletModel } from "../models/wallet-model";
+import config from "../utils/config";
 
 export interface Service {
   coin: CoinTypes;
@@ -10,11 +11,13 @@ export interface Service {
 abstract class WalletBaseService implements Service {
   public abstract coin: CoinTypes;
 
-  abstract createWallet(user_id: string): Promise<IWalletModel>
-  protected async saveWallet(user_id: string, wallet: IWalletModel) {
+  abstract createWallet(user_id: string): Promise<IWalletModel>;
+
+  protected async saveWallet(user_id: string, wallet: Partial<IWalletModel>) {
     const newWallet = new Wallets({
       user_id,
       name: this.coin,
+      isTestNet: !config.isProduction,
       ...wallet
     });
 

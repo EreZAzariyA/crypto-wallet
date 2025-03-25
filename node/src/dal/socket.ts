@@ -29,13 +29,16 @@ class SocketIo {
     })
 
     socket.on('handshake', async (user_id, callback) => {
-      const user = await UserModel.findById(user_id).exec();
-      if (!user) {
-        throw new ClientError(400, 'User not found');
+      try {
+        const user = await UserModel.findById(user_id).exec();
+        if (user) {
+          const response = `Hello ${user.emails[0].email}, handshake completed. ${socket.id}`;
+          console.log(`Room for ${user_id} created with socket ${socket.id}`);
+          callback(response);
+        }
+      } catch (error) {
+        console.log({ error });
       }
-      const response = `Hello ${user.emails[0].email}, handshake completed. ${socket.id}`;
-      console.log(`Room for ${user_id} created with socket ${socket.id}`);
-      callback(response);
     });
 
     socket.on("user-disconnect", (user_id: string) => {

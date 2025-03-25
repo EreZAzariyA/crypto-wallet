@@ -5,10 +5,7 @@ class WalletModel {
   public isTestNet: boolean;
   public privateKey: string;
   public publicKey: string;
-  public address: {
-    base58: string;
-    hex: string
-  };
+  public address: string;
   public walletBalance: number;
 };
 

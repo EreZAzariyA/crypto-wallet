@@ -1,5 +1,6 @@
 export enum CoinsType {
-  TRX = 'TRX'
+  TRX = 'TRX',
+  ETH = 'ETH'
 };
 
 

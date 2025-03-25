@@ -53,7 +53,7 @@ app.use('*', async(_: Request, res: Response) => {
 
 httpServer.listen(5000, () => {
   config.log.info('Listening on port 5000');
-  cronJobs.startJobs([CoinTypes.TRX]);
+  cronJobs.startJobs([CoinTypes.TRX, CoinTypes.ETH]);
 
   connectToMongoDB().then((collectionName) => {
     config.log.info(`Successfully connected to ${collectionName}`);

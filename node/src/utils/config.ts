@@ -15,6 +15,10 @@ abstract class Config {
     isTestNet: boolean;
     key: string;
   }
+  public ethNode: {
+    isTestNet: boolean;
+    key: string;
+  }
 };
 
 class DevelopmentConfig extends Config {
@@ -31,6 +35,10 @@ class DevelopmentConfig extends Config {
       isTestNet: true,
       key: 'dd412e64-e48f-4ab3-8cce-1226e8c9a0f4'
     }
+    this.ethNode = {
+      isTestNet: true,
+      key: '0262f79ea79e4c54b6a54fce4e363043'
+    }
   };
 };
 
@@ -44,6 +52,10 @@ class ProductionConfig extends Config {
     this.tronNode = {
       isTestNet: false,
       key: 'dd412e64-e48f-4ab3-8cce-1226e8c9a0f4'
+    }
+    this.ethNode = {
+      isTestNet: false,
+      key: '0262f79ea79e4c54b6a54fce4e363043'
     }
   };
 };

@@ -6,6 +6,7 @@ import WalletServiceFactory from "../services/WalletServiceFactory";
 
 export enum CoinTypes {
   TRX = "TRX",
+  ETH = "ETH"
 };
 
 const isCoinValid = (coin: CoinTypes): Boolean => {
@@ -36,9 +37,7 @@ class WalletsLogic {
 
   async createWallet(user_id: string, coin: CoinTypes) {
     const service = WalletServiceFactory.createService(coin);
-    console.log({service});
     const wallet = await service.createWallet(user_id);
-    console.log({wallet});
     return wallet;
   }
 };
