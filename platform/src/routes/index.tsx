@@ -7,6 +7,7 @@ import SignIn from "../components/auth/sign-in";
 import SignUp from "../components/auth/sign-up";
 import Dashboard from "../components/dashboard";
 import PageNotFound from "../components/page-not-found";
+import Transactions from "../components/transactions";
 
 const dashboardRoutes: RouteObject[] = [
   {
@@ -20,6 +21,10 @@ const dashboardRoutes: RouteObject[] = [
       {
         path: "dashboard",
         element: <Dashboard />,
+      },
+      {
+        path: "transactions",
+        element: <Transactions />,
       },
       {
         path: "*",

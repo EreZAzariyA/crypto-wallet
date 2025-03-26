@@ -13,8 +13,6 @@ export const createWalletAction = createAsyncThunk<WalletModel, { user_id: strin
   async ({ user_id, coin }, thunkApi) => {
     try {
       const wallet = await walletServices.createWallet(user_id, coin);
-      console.log({ wallet });
-      
       return thunkApi.fulfillWithValue(wallet);
     } catch (error) {
       return thunkApi.rejectWithValue(error);

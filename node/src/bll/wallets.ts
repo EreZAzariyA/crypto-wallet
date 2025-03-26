@@ -39,7 +39,8 @@ class WalletsLogic {
     const service = WalletServiceFactory.createService(coin);
     const wallet = await service.createWallet(user_id);
     return wallet;
-  }
+  };
+
 };
 
 const walletsLogic = new WalletsLogic();

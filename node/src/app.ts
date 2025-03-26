@@ -10,38 +10,17 @@ import { errorsHandler, verifyToken } from './middlewares';
 import cronJobs from './workers';
 import { CoinTypes } from './bll/wallets';
 import SocketIo from './dal/socket';
-import session from 'express-session'
-import MongoStore from 'connect-mongo';
+import cookieParser from 'cookie-parser';
 
 const app = express();
 const httpServer = http.createServer(app);
-export const socket = new SocketIo(httpServer);
-
+app.use(cookieParser(config.secretKey));
+app.use(express.json());
 app.use(cors({
   origin: ['http://localhost:5173', 'http://localhost:5174'],
   credentials: true,
   methods: ['GET', 'PUT', 'POST', 'PATCH', 'DELETE', 'OPTIONS']
 }));
-app.use(express.json());
-
-app.use(
-  session({
-    secret: config.secretKey,
-    resave: false,
-    saveUninitialized: true,
-    store: new MongoStore({
-      mongoUrl: config.mongoConnectionString,
-      collectionName: 'sessions',
-      ttl: config.loginExpiresIn / 1000
-    }),
-    cookie: {
-      httpOnly: config.isProduction,
-      secure: config.isProduction,
-      maxAge: config.loginExpiresIn,
-      priority: 'high',
-    }
-  })
-);
 
 app.use('/api/auth', authRouter);
 app.use('/api/tron', verifyToken, tronRouter);
@@ -61,3 +40,4 @@ httpServer.listen(5000, () => {
 });
 
 app.use(errorsHandler);
+export const socket = new SocketIo(httpServer);

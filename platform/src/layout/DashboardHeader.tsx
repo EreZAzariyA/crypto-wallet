@@ -38,7 +38,8 @@ const DashboardHeader = (props: DashboardHeaderProps) => {
       dispatch(getUserWalletsAction(user_id));
       socketIo.sendHandshake(user_id);
     }
-  }, [dispatch, user_id]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user_id]);
 
   const onClick: MenuProps['onClick'] = async (e) => {
     if (e.key === 'sign-out') {

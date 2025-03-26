@@ -20,6 +20,13 @@ class TronService extends WalletBaseService {
       throw new ClientError(500, `TronService.createWallet[Error]: ${error?.message}`);
     }
   };
+
+  async fetchTransactions(address: string): Promise<any[]> {
+    return [];
+  };
+  async sendCoin(wallet: IWalletModel, toAddress: string, amountInTrx: string): Promise<any> {
+    return [];
+  };
 };
 
 export default TronService;

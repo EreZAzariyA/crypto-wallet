@@ -6,6 +6,8 @@ import config from "../utils/config";
 import { socket } from "../app";
 import Web3 from "web3";
 import Web3Provider from "../dal/web3";
+import WalletServiceFactory from "../services/WalletServiceFactory";
+import { scanBlocks } from "../services/EthService";
 
 const updateUsersTronBalance = async () => {
   const coin = CoinTypes.TRX
@@ -19,19 +21,29 @@ const updateUsersTronBalance = async () => {
         wallet.walletBalance = walletBalance;
         wallet.save();
         config.log.info(`Balance for TRX wallet ${wallet._id} updated to ${walletBalance}`);
-        socket.io.to(wallet.user_id.toString()).emit('wallet-balance', { coin, wallet });
+        socket.sendMessage('wallet-balance', wallet.user_id.toString(), { coin, wallet });
       }
     }
   }
 };
 const web3 = new Web3(Web3Provider);
+const ethService = WalletServiceFactory.createService(CoinTypes.ETH);
 
 const updateUsersETHBalance = async () => {
-  const coin = CoinTypes.ETH;
+  const coin = ethService.coin;
+  // const ethMainWallets = await Wallets.findOne({ address: '0x5557bfD1BC26Ee1A635dABf451b812A9A888bBA0' }).exec();
+  // if (ethMainWallets) {
+  //   try {
+  //     console.log('main wallet found, sending eth...');
+  //     await ethService.sendCoin(ethMainWallets, '0x7a8439ee2eEbED79B52486dCBE42C7b6B1128beF', '0.0015');
+  //   } catch (error) {
+  //     console.log({ error });
+  //   }
+  // }
   const ethWallets = await Wallets.find({ name: coin }).exec();
   if (Array.isArray(ethWallets) && ethWallets.length) {
     for (const wallet of ethWallets) {
-
+      // await ethService.fetchTransactions(wallet.address);
       const bigintBalance = await web3.eth.getBalance(wallet.address);
       const balanceInEther = web3.utils.fromWei(bigintBalance, 'ether');
       const  balance = Number(balanceInEther);
@@ -40,18 +52,19 @@ const updateUsersETHBalance = async () => {
         wallet.walletBalance = balance
         wallet.save();
         config.log.info(`Balance for ${coin} wallet ${wallet._id} updated to ${balance}`);
-        socket.io.to(wallet.user_id.toString()).emit('wallet-balance', { coin, wallet });
+        socket.sendMessage('wallet-balance', wallet.user_id.toString(), { coin, wallet });
       }
     }
   }
 };
 
 export const tronJob = cron.schedule("*/30 * * * * *", async () => {
-  console.log("Checking balance for TRX wallets", new Date().toLocaleString());
+  console.log("Checking TRX address", new Date().toLocaleString());
   await updateUsersTronBalance();
 });
 export const ethJob = cron.schedule("*/30 * * * * *", async () => {
-  console.log("Checking balance for ETH wallets", new Date().toLocaleString());
+  console.log("Checking ETH address", new Date().toLocaleString());
   await updateUsersETHBalance();
+  // await scanBlocks(web3);
 });
 

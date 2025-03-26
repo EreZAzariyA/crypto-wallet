@@ -1,16 +1,21 @@
 import { NextFunction, Request, Response } from "express";
 import ClientError from "../models/client-error";
 import jwt from "../utils/jwt";
+import config from "../utils/config";
 
 const verifyToken = async(req: Request, res: Response, next: NextFunction):Promise<void> => {
   try {
-    const isValid = await jwt.verifyToken(req);
-    if (!isValid) {
-      const error = new ClientError(401, "Invalid or expired token");
-      next(error);
-    }
+    const refreshedToken = await jwt.verifyToken(req);
+    res.cookie('token', refreshedToken, {
+      httpOnly: config.isProduction,
+      maxAge: config.loginExpiresIn,
+      secure: config.isProduction,
+      priority: 'high',
+      path: '/'
+    })
   } catch (err: any) {
-    next(err);
+    const error = new ClientError(401, err);
+    next(error);
   }
 
   next();

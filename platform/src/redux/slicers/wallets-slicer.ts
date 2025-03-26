@@ -48,18 +48,11 @@ const extraReducers = (builder: ActionReducerMapBuilder<WalletsState>) => {
     loading: false,
     error: error
   }))
-  .addCase(createWalletAction.fulfilled, (state, { payload, meta }) => {
-    const wallets = {
-      ...state.wallets,
-      [meta.arg.coin]: payload
-    };
-
-    return {
-      ...state,
-      loading: false,
-      wallets
-    }
-  })
+  .addCase(createWalletAction.fulfilled, (state, { payload, meta }) => ({
+    ...state,
+    loading: false,
+    wallets: { ...state.wallets, [meta.arg.coin]: payload }
+  }))
 };
 
 const walletsSlicer = createSlice({

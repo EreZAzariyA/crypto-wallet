@@ -1,6 +1,6 @@
 import { Request } from "express";
 import jwt, { VerifyErrors } from "jsonwebtoken";
-import { ClientError, IUserModel, UserModel } from "../models";
+import { IUserModel, UserModel } from "../models";
 import { ErrorMessages } from "./helpers";
 import config from "./config";
 
@@ -17,68 +17,41 @@ class JWTServices {
     return token;
   };
 
-  public verifyToken(request: Request): Promise<boolean> {
+  public verifyToken(request: Request): Promise<string> {
     return new Promise((resolve, reject) => {
       try {
-        const session = request.session;
-        const token = (session as any).token;
+        const { token } = request.cookies;
         if (!token) {
-          const error = new ClientError(401, 'No token provide');
-          reject(error);
+          return reject('No token provide');
         }
 
-        jwt.verify(token, this.secretKey, async (err: VerifyErrors, decoded: IUserModel) => {
+        jwt.verify(token, this.secretKey, async (err: VerifyErrors, decodedUser: IUserModel) => {
           if (err) {
-            const error = new ClientError(401, ErrorMessages.TOKEN_EXPIRED);
-            reject(error);
+            return reject(ErrorMessages.TOKEN_EXPIRED);
           }
+          console.log(decodedUser);
+          
 
-          const user: IUserModel = decoded;
-          if (user?._id && typeof user._id === 'string') {
-            const userPro = await UserModel.exists({ _id: user._id }).exec();
-            if (!userPro._id) {
-              const err = new ClientError(401, 'User profile not found. Try to reconnect.');
-              reject(err);
+          try {
+            const userPro = await UserModel.findById(decodedUser?._id)
+              .select({ services: 0, loginAttempts: 0 })
+              .exec();
+
+            if (!userPro) {
+              return reject('User profile not found. Try to reconnect.');
             }
-          }
 
-          resolve(!!token);
+            const refreshedToken = this.getNewToken(userPro.toObject());
+            resolve(refreshedToken);
+          } catch (dbError) {
+            reject(dbError);
+          }
         });
       }
       catch (err: any) {
         reject(err);
       }
     });
-    // return new Promise((resolve, reject) => {
-    //   try {
-    //     const token = request.headers.authorization?.substring(7);
-    //     if (!token) {
-    //       const error = new ClientError(401, 'No token provide');
-    //       reject(error);
-    //     }
-
-    //     jwt.verify(token, this.secretKey, async (err: VerifyErrors, decoded: IUserModel) => {
-    //       if (err) {
-    //         const error = new ClientError(401, ErrorMessages.TOKEN_EXPIRED);
-    //         reject(error);
-    //       }
-
-    //       const user: IUserModel = decoded;
-    //       if (user?._id && typeof user._id === 'string') {
-    //         const userPro = await UserModel.exists({ _id: user._id }).exec();
-    //         if (!userPro._id) {
-    //           const err = new ClientError(401, 'User profile not found. Try to reconnect.');
-    //           reject(err);
-    //         }
-    //       }
-
-    //       resolve(!!token);
-    //     });
-    //   }
-    //   catch (err: any) {
-    //     reject(err);
-    //   }
-    // });
   };
 
   public getUserFromToken(request: Request): IUserModel {

@@ -3,8 +3,199 @@ import Wallets, { IWalletModel } from "../models/wallet-model";
 import { CoinTypes } from "../bll/wallets";
 import config from "../utils/config";
 import WalletBaseService from "./WalletBaseService";
-import Web3 from 'web3';
+import Web3, { Transaction } from 'web3';
 import Web3Provider from "../dal/web3";
+import axios from "axios";
+import TransactionModel, { ITransaction, TransactionsStatus } from "../models/transaction-model";
+import { isArrayAndNotEmpty } from "../utils/helpers";
+
+const ETHERSCAN_API_KEY = "8NBT2T4PQ1QB4UKIJXSAZKSXJPD7N3XYJ4";
+
+const updateWalletLastScannedBlock = async (wallet: IWalletModel, lastBlock: number) => {
+  try {
+    await Wallets.updateOne({ address: wallet.address }, { lastScanBlock: lastBlock }).exec();
+    config.log.debug(`Wallet ${wallet.address} last scan block updated to ${lastBlock}`);
+  } catch (error) {
+    throw new ClientError(500, `[EthService.updateWalletLastScannedBlock]: ${error?.message || 'Error'}`);
+  }
+};
+
+// const fetchUsersTransactions = async (web3: Web3) => {
+//   const wallets = await Wallets.find({ name: CoinTypes.ETH }).exec();
+//   const walletsList = {};
+//   const startBlock = wallets.reduce((acc, wallet) => {
+//     return Math.max(acc, wallet.lastScanBlock);
+//   }, 0);
+
+//   if (isArrayAndNotEmpty(wallets)) {
+//     wallets.forEach((wallet) => {
+//       walletsList[wallet.address] = wallet;
+//     });
+//   }
+
+//   const lastBlock = await web3.eth.getBlockNumber();
+//   const ending = Number(lastBlock);
+
+//   config.log.debug(`Scanning Etherscan API (from latest block: ${startBlock} to ${ending})...`);
+
+//   const apiUrl = `https://api-sepolia.etherscan.io/api?module=account&action=txlist&address=${address}&startblock=${start}&endblock=${ending}&sort=desc&apikey=${ETHERSCAN_API_KEY}`;
+//   const res = await axios.get(apiUrl);
+//   const response = res.data;
+  
+//   // if (!response) {
+//   //   config.log.debug(`Etherscan API Error: ${response.message || "Unknown error"}`);
+//   //   return;
+//   // } else if (response.result && Array.isArray(response.result)) {
+//   //   config.log.debug(`Etherscan API: response ${response.message}`);
+//   //   await updateWalletLastScannedBlock(wallet, ending);
+//   //   return;
+//   // }
+// };
+
+// export const scanBlocks = async (web3: Web3) => {
+//   const wallets = await Wallets.find({ name: CoinTypes.ETH }).exec();
+//   if (!isArrayAndNotEmpty(wallets)) {
+//     console.log(`No ETH wallet to scan...`);
+//     return;
+//   }
+
+//   // Find the highest lastScanBlock across all wallets
+//   const startBlock = wallets.reduce((acc, wallet) => Math.max(acc, wallet.lastScanBlock), 0);
+//   const lastBlock = await web3.eth.getBlockNumber();
+//   const endBlock = Number(lastBlock);
+
+//   console.log(`Scanning blocks from block: ${startBlock} to block: ${endBlock}...`);
+
+//   // Prepare walletsObj mapping addresses to wallets for quick lookup
+//   const walletsObj: Record<string, any> = {};
+//   wallets.forEach((wallet) => {
+//     walletsObj[wallet.address.toLowerCase()] = wallet; // Use lowercase for consistency
+//   });
+
+//   let updatedWallets = new Set<string>();
+
+//   for (let blockNumber = startBlock; blockNumber <= endBlock; blockNumber++) {
+//     console.log(`Scanning block ${blockNumber}...`);
+
+//     try {
+//       const block = await web3.eth.getBlock(blockNumber, true);
+//       if (!block || !block.transactions) continue;
+
+//       // Filter transactions where either 'from' or 'to' is one of our wallet addresses
+//       const relevantTxs = block.transactions.filter((tx) => {
+//         if (typeof tx === "string") return false; // Skip if tx is a string (invalid tx)
+//         return (
+//           (tx.from && walletsObj[tx.from.toLowerCase()]) || 
+//           (tx.to && walletsObj[tx.to.toLowerCase()])
+//         );
+//       });
+
+//       if (relevantTxs.length > 0) {
+//         console.log(`🚀 Found transactions in block ${blockNumber}:`, relevantTxs);
+
+//         // Mark wallets that had transactions for update
+//         relevantTxs.forEach((tx) => {
+//           if (typeof tx === "string") return;
+//           if (tx.from) updatedWallets.add(tx.from.toLowerCase());
+//           if (tx.to) updatedWallets.add(tx.to.toLowerCase());
+//         });
+//       }
+
+//     } catch (error) {
+//       console.error(`Error scanning block ${blockNumber}:`, error);
+//     }
+//   }
+
+//   // Update lastScanBlock for wallets that had transactions
+//   // if (updatedWallets.size > 0) {
+//     await Wallets.updateMany(
+//       { address: { $in: Object.keys(walletsObj).map((k) => k) } },
+//       { $set: { lastScanBlock: endBlock } }
+//     ).exec();
+//     console.log(`✅ Updated lastScanBlock to ${endBlock} for wallets:`, Object.keys(walletsObj).map((k) => k));
+//   // }
+
+//   console.log(`Scan blocks done...`);
+// };
+
+export const scanBlocks = async (web3: Web3) => {
+  const wallets = await Wallets.find({ name: CoinTypes.ETH }).exec();
+  if (!isArrayAndNotEmpty(wallets)) {
+    console.log(`No ETH wallet to scan...`);
+    return;
+  }
+
+  // Find the highest lastScanBlock across all wallets
+  const startBlock = wallets.reduce((acc, wallet) => Math.max(acc, wallet.lastScanBlock), 0);
+  const lastBlock = await web3.eth.getBlockNumber();
+  const endBlock = Number(lastBlock);
+
+  console.log(`Scanning blocks from block: ${startBlock} to block: ${endBlock}...`);
+
+  // Prepare walletsObj mapping addresses to wallets for quick lookup
+  const walletsObj: Record<string, any> = {};
+  wallets.forEach((wallet) => {
+    walletsObj[wallet.address.toLowerCase()] = wallet; // Use lowercase for consistency
+  });
+
+  let relevantTransactions = [];
+
+  for (let blockNumber = startBlock; blockNumber <= endBlock; blockNumber++) {
+    console.log(`Scanning block ${blockNumber}...`);
+
+    try {
+      const block = await web3.eth.getBlock(blockNumber, true);
+      if (!block || !block.transactions) continue;
+
+      // Filter transactions where either 'from' or 'to' is one of our wallet addresses
+      const relevantTxs = block.transactions.filter((tx) => {
+        if (typeof tx === "string") return false; // Skip if tx is a string (invalid tx)
+        return (
+          (tx.from && walletsObj[tx.from.toLowerCase()]) || 
+          (tx.to && walletsObj[tx.to.toLowerCase()])
+        );
+      });
+
+      if (relevantTxs.length > 0) {
+        console.log(`🚀 Found transactions in block ${blockNumber}:`, relevantTxs);
+        relevantTxs.map((tnx) => {
+          if (typeof tnx === 'string') return;
+
+          const isSent = Object.keys(walletsObj).includes(tnx.from);
+
+          new TransactionModel({
+            blockNumber: Number(tnx.blockNumber),
+            coin: CoinTypes.ETH,
+            blockHash: tnx.blockHash,
+            from: tnx.from,
+            hash: tnx.hash,
+            to: tnx.to,
+            transactionIndex: Number(tnx.transactionIndex),
+            amount: isSent ? -Number(web3.utils.fromWei(tnx.value, 'ether')) : Number(web3.utils.fromWei(tnx.value, 'ether')),
+          }).save();
+
+          console.log(`✅ Saved trans.`);
+        })
+
+        // Add relevant transactions to the list for saving
+      }
+
+    } catch (error) {
+      console.error(`Error scanning block ${blockNumber}:`, error);
+    }
+  }
+
+  if (relevantTransactions.length > 0) {
+    console.log({ relevantTransactions });
+    // Save the relevant transactions to your database (make sure you have a suitable collection)
+    // Example: assuming you have a `Transactions` model to save the transactions
+  } else {
+    console.log(`No relevant transactions found.`);
+  }
+
+  console.log(`Scan blocks done...`);
+};
+
 
 class ETHService extends WalletBaseService {
   public coin: CoinTypes = CoinTypes.ETH;
@@ -12,19 +203,102 @@ class ETHService extends WalletBaseService {
   protected web3 = new Web3(Web3Provider);
 
   async createWallet(user_id: string): Promise<IWalletModel> {
-    try {
+    // try {
       const wallet = this.web3.eth.accounts.create();
+      const lastBlock = await this.web3.eth.getBlockNumber();
+      const newWallet = {
+        address: wallet.address?.toLowerCase(),
+        privateKey: wallet.privateKey,
+        lastScanBlock: Number(lastBlock)
+      };
 
-
-      return await this.saveWallet(user_id, { address: wallet.address, privateKey: wallet.privateKey });
-    } catch (error) {
-      throw new ClientError(500, `ETHService.createWallet[Error]: ${error?.message}`);
-    }
-
-    // if (wallet.publicKey && wallet.address && wallet.address.hex) {
-    //   return this.saveWallet(user_id, wallet);
+      return await this.saveWallet(user_id, newWallet);
+    // } catch (error) {
+    //   throw new ClientError(500, `ETHService.createWallet[Error]: ${error?.message}`);
     // }
+  };
 
+  async fetchTransactions(address: string): Promise<ITransaction[]> {
+    const lastBlock = await this.web3.eth.getBlockNumber();
+    const ending = Number(lastBlock);
+
+    const wallet = await Wallets.findOne({ address }).exec();
+    const start = wallet?.lastScanBlock || 0;
+    config.log.debug(`Scanning Etherscan API (from block: ${start} to ${ending})...`);
+
+    try {
+      const apiUrl = `https://api-sepolia.etherscan.io/api?module=account&action=txlist&address=${address}&startblock=${start}&endblock=${ending}&sort=desc&apikey=${ETHERSCAN_API_KEY}`;
+      const res = await axios.get(apiUrl);
+      const response = res.data;
+      
+      if (!response) {
+        config.log.debug(`Etherscan API Error: ${response.message || "Unknown error"}`);
+        return;
+      } else if (response.result && Array.isArray(response.result)) {
+        config.log.debug(`Etherscan API: response ${response.message}`);
+        await updateWalletLastScannedBlock(wallet, ending);
+        return;
+      }
+
+      const transactions = response.result;
+      const transactionsToInsert: ITransaction[] = [];
+
+      for (let trans of transactions) {
+        if (!isNaN(Number(trans?.confirmations)) && Number(trans?.confirmations) === 0) {
+          trans.status = TransactionsStatus.Pending
+        } else if (trans.txreceipt_status === "1") {
+          trans.status = TransactionsStatus.Success
+        } else {
+          trans.status = TransactionsStatus.Denied
+        }
+        
+        const newTrans = new TransactionModel({
+          ...trans,
+          coin: this.coin,
+          date: new Date(Number(trans.timeStamp) * 1000).toISOString(),
+          amount: Number(this.web3.utils.fromWei(trans.value, 'ether'))
+        });
+        const errors = newTrans.validateSync();
+        if (errors) {
+          throw new ClientError(500, errors.message);
+        }
+
+        transactionsToInsert.push(newTrans);
+      }
+
+      const inserted = await TransactionModel.insertMany(transactionsToInsert);
+      config.log.debug(`Imported ${inserted.length || 0} transactions`);
+      await updateWalletLastScannedBlock(wallet, ending);
+      return transactionsToInsert;
+    } catch (error) {
+      console.log({ error });
+      throw new ClientError(500, 'Error on getTransactions');
+    }
+  };
+
+  async sendCoin(wallet: IWalletModel, toAddress: string, amountInEth: string) {
+    const value = this.web3.utils.toWei(amountInEth, "ether"); // Convert 0.1 ETH to Wei
+    const gasPrice = await this.web3.eth.getGasPrice();
+    const nonce = await this.web3.eth.getTransactionCount(wallet.address, "latest");
+  
+    const tx: Transaction = {
+      from: wallet.address,
+      to: toAddress,
+      value: value,
+      gas: 21000,
+      gasPrice: gasPrice,
+      nonce: nonce,
+    };
+    console.log({tx});
+
+    try {
+      const signedTx = await this.web3.eth.accounts.signTransaction(tx, wallet.privateKey);
+      const receipt = await this.web3.eth.sendSignedTransaction(signedTx.rawTransaction!);
+      return receipt;
+    } catch (error) {
+      console.error("Transaction failed:", error?.reason);
+      throw new Error(`Transaction failed: ${error?.reason}`);
+    }
   };
 };
 

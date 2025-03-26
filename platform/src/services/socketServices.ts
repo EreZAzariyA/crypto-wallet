@@ -24,9 +24,8 @@ class SocketIo {
   async sendHandshake(user_id: string) {
     console.log('Sending handshake to server...');
 
-    this.socket.emit('handshake', user_id, async (user: string) => {
-      console.log('User handshake callback message received', user);
-      return user;
+    this.socket.emit('handshake', user_id, async (message: string) => {
+      console.log('User handshake callback message received:', message);
     });
   }
 }

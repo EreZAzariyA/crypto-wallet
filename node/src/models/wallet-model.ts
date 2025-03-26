@@ -1,4 +1,5 @@
 import mongoose, { Document, model, Schema } from "mongoose"
+import { CoinTypes } from "../bll/wallets";
 
 export interface IWalletModel extends Document {
   name: string;
@@ -7,6 +8,7 @@ export interface IWalletModel extends Document {
   privateKey: string;
   publicKey: string;
   address: string;
+  lastScanBlock: number;
   walletBalance: number;
 };
 
@@ -16,7 +18,7 @@ const WalletSchema = new Schema<IWalletModel>({
     required: true
   },
   user_id: {
-    type: Schema.ObjectId,
+    type: Schema.Types.ObjectId,
     required: true
   },
   isTestNet: {
@@ -30,12 +32,17 @@ const WalletSchema = new Schema<IWalletModel>({
   },
   publicKey: {
     type: String,
-    unique: true
+    unique: true,
+    sparse: true
   },
   address: {
     type: String,
     required: true,
     unique: true
+  },
+  lastScanBlock: {
+    type: Number,
+    default: 0
   },
   walletBalance: {
     type: Number,

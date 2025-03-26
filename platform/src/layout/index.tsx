@@ -10,11 +10,11 @@ import { ThemeColors } from "../utils/enums";
 import { Layout, Menu, MenuProps } from "antd";
 import { AiOutlineLogout, AiOutlineProfile } from "react-icons/ai";
 import { BiLogInCircle } from "react-icons/bi";
-import { CiCircleList, CiBank } from "react-icons/ci";
 import { BsReceipt } from "react-icons/bs";
 import { FaAddressCard } from "react-icons/fa";
 import { RxDashboard } from "react-icons/rx";
 import { VscAccount } from "react-icons/vsc";
+import { useIdleTimer } from "react-idle-timer";
 
 const { Sider, Content } = Layout;
 
@@ -35,6 +35,11 @@ const DashboardView = () => {
   const style: React.CSSProperties = {
     textAlign: isEN ? 'left' : 'right'
   }
+
+  useIdleTimer({
+    timeout: 1000 * 60 * 10,
+    onIdle: () => dispatch(logoutAction()),
+  });
 
   useEffect(() => {
     const path = pathname.split('/')[1];
@@ -66,12 +71,6 @@ const DashboardView = () => {
       'auth/sign-up',
       <FaAddressCard size={Sizes.SUB_MENU_ICON} />,
       undefined, style
-    ),
-    getMenuItem(
-      t('menu.account.5'),
-      'sign-out',
-      <AiOutlineLogout color={Colors.DANGER} size={Sizes.SUB_MENU_ICON} />,
-      undefined, style
     )
   ];
 
@@ -83,21 +82,9 @@ const DashboardView = () => {
       undefined, style
     ),
     getMenuItem(
-      <Link to='/categories'>{t('menu.categories')}</Link>,
-      'categories',
-      <CiCircleList size={Sizes.MENU_ICON} />,
-      undefined, style
-    ),
-    getMenuItem(
       <Link to='/transactions'>{t('menu.transactions')}</Link>,
       'transactions',
       <BsReceipt size={Sizes.MENU_ICON} />,
-      undefined, style
-    ),
-    getMenuItem(
-      <Link to='/bank'>{t('menu.bankAccount')}</Link>,
-      'bank',
-      <CiBank size={Sizes.MENU_ICON} />,
       undefined, style
     ),
     getMenuItem(

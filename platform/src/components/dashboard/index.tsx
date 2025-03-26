@@ -1,24 +1,10 @@
-import { Button, Flex, Space, Typography } from "antd";
+import { Flex, Typography } from "antd";
 import "./Dashboard.css";
 import { useTranslation } from "react-i18next";
-import { useAppDispatch, useAppSelector } from "../../redux/store";
-import { SupportedCoins } from "../../utils/helpers";
-import { CoinsType } from "../../utils/enums";
-import { createWalletAction } from "../../redux/actions/wallets-actions";
+import { WalletsList } from "../components/WalletsList";
 
 const Dashboard = () => {
   const { t } = useTranslation();
-  const dispatch = useAppDispatch();
-  const { wallets } = useAppSelector((state) => state.wallets);
-  const { user_id } = useAppSelector((state) => state.auth);
-
-  const createWallet = async (coin: CoinsType) => {
-    try {
-      await dispatch(createWalletAction({ user_id, coin })).unwrap();
-    } catch (error) {
-      console.log({ error });
-    }
-  }
 
   return (
     <Flex vertical gap={10} className="page-container dashboard">
@@ -27,8 +13,9 @@ const Dashboard = () => {
           <Typography.Title level={2} className="page-title">{t('pages.dashboard')}</Typography.Title>
         </Flex>
       </Flex>
+      <WalletsList />
 
-      <Space direction="vertical" size={"large"}>
+      {/* <Space direction="vertical" size={"large"}>
         {SupportedCoins.map((coin) => {
           const wallet = wallets[coin];
           return (
@@ -50,7 +37,7 @@ const Dashboard = () => {
           )
         })}
 
-      </Space>
+      </Space> */}
     </Flex>
   );
 };

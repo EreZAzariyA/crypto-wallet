@@ -4,7 +4,6 @@ import { GoogleOAuthProvider } from '@react-oauth/google'
 import store from './redux/store.ts'
 import App from './App.tsx'
 import i18n from "i18next";
-import './index.css'
 import '@ant-design/v5-patch-for-react-19';
 import interceptorsService from './services/InterceptorsService.ts'
 import './styles/DashboardView.css'
