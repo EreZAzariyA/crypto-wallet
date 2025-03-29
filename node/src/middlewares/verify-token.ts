@@ -7,11 +7,11 @@ const verifyToken = async(req: Request, res: Response, next: NextFunction):Promi
   try {
     const refreshedToken = await jwt.verifyToken(req);
     res.cookie('token', refreshedToken, {
-      httpOnly: config.isProduction,
       maxAge: config.loginExpiresIn,
-      secure: config.isProduction,
+      httpOnly: false,
+      secure: false,
       priority: 'high',
-      path: '/'
+      sameSite: 'lax',
     })
   } catch (err: any) {
     const error = new ClientError(401, err);

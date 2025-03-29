@@ -9,6 +9,7 @@ export interface IWalletModel extends Document {
   privateKey: string;
   publicKey: string;
   address: string;
+  hex: string;
   lastScanBlock: number;
   walletBalance: number;
 };
@@ -18,7 +19,10 @@ export const WalletSchema = new Schema<IWalletModel>({
     type: String,
     required: true
   },
-  network: String,
+  network: {
+    type: String,
+    required: true
+  },
   user_id: {
     type: Schema.Types.ObjectId,
     required: true
@@ -40,7 +44,10 @@ export const WalletSchema = new Schema<IWalletModel>({
   address: {
     type: String,
     required: true,
-    unique: true
+  },
+  hex: {
+    type: String,
+    required: true,
   },
   lastScanBlock: {
     type: Number,

@@ -1,6 +1,7 @@
 {
   "menu": {
     "dashboard": "Dashboard",
+    "wallets": "Wallets",
     "transactions": "Transactions",
     "creditCards": "Credit Cards",
     "categories": "Categories",

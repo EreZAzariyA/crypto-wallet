@@ -1,5 +1,5 @@
 import { WalletModel } from "../../../models";
-import { Button, Form, Input, InputNumber, Result } from 'antd';
+import { App, Button, Form, Input, InputNumber, Result } from 'antd';
 // import walletServices from "../../../services/wallets";
 import { useState } from "react";
 import { sendCoinsAction } from "../../../redux/actions/wallets-actions";
@@ -12,6 +12,7 @@ interface WithdrawModalProps {
 
 export const WithdrawModal = (props: WithdrawModalProps) => {
   const { wallet } = props;
+  const { notification } = App.useApp();
   const [loading, setLoading] = useState(false);
   const [res, setRes] = useState(null);
   const dispatch = useAppDispatch();
@@ -26,8 +27,10 @@ export const WithdrawModal = (props: WithdrawModalProps) => {
       })).unwrap();
       console.log(res);
       setRes(res);
-    } catch (error) {
-      console.log({ error });
+    } catch (error: any) {
+      notification.error({
+        message: error
+      })
     }
     setLoading(false);
   };
@@ -48,7 +51,7 @@ export const WithdrawModal = (props: WithdrawModalProps) => {
   };
 
   return (
-    <Form onFinish={sendCoin} layout="vertical">
+    <Form onFinish={sendCoin} layout="vertical" disabled={loading}>
       <Form.Item
         label='Address'
         name={'address'}
@@ -79,7 +82,7 @@ export const WithdrawModal = (props: WithdrawModalProps) => {
           // max={wallets[selectedWallet].walletBalance}
         />
       </Form.Item>
-      <Button htmlType="submit">Send</Button>
+      <Button htmlType="submit" loading={loading}>Send</Button>
     </Form>
   );
 };

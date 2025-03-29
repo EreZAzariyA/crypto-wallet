@@ -20,8 +20,6 @@ abstract class WalletBaseService implements Service {
   abstract sendCoin(wallet: IWalletModel, toAddress: string, amountInEth: number): Promise<any>;
 
   protected async saveWallet(user_id: string, wallet: Partial<IWalletModel>) {
-    console.log({ walletToSave: wallet });
-
     const newWallet = new Wallets({
       user_id,
       network: this.coin,

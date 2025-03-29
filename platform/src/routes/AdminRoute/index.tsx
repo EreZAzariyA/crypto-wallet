@@ -8,7 +8,7 @@ const AdminRoute = () => {
   const location = useLocation();
   const dispatch = useAppDispatch();
 
-  const user = useAppSelector((state) => state.auth.user);
+  const { user } = useAppSelector((state) => state.auth);
   const isAdminENV = JSON.parse(import.meta.env.VITE_ADMIN) || false;
 
   const logout = async () => {

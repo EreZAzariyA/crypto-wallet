@@ -37,11 +37,7 @@ class SocketIo {
     });
 
     socket.on("user-disconnect", (user_id: string) => {
-      socket.leave(user_id);
-      if (user_id) {
-        delete this.users[user_id];
-      }
-      console.log(`user ${user_id} disconnected`);
+      this.onDisconnect(socket, user_id);
     });
   };
 
@@ -51,8 +47,7 @@ class SocketIo {
     if (!user) return;
     const { admin } = user;
 
-    config.log.info(`Admin ${user.emails[0].email} connected...`);
-    this.joinRoom(socket, user._id.toString());
+    this.joinRoom(socket, user._id.toString(), true);
 
     socket.on('handshake', async (user_id, callback) => {
       if (!admin) {
@@ -62,12 +57,7 @@ class SocketIo {
     });
 
     socket.on("user-disconnect", (user_id: string) => {
-      socket.leave(user_id);
-      if (user_id) {
-        delete this.users[user_id];
-      }
-      socket.disconnect();
-      config.log.info(`user ${user_id} disconnected`);
+      this.onDisconnect(socket, user_id, true);
     });
   };
 
@@ -76,16 +66,17 @@ class SocketIo {
     this.io.to(to).emit(name, payload);
   };
 
-  joinRoom(socket: Socket, user_id: string) {
+  joinRoom(socket: Socket, user_id: string, isAdmin?: boolean) {
     this.users[user_id] = socket.id;
     socket.join(user_id);
-    config.log.info(`User: ${user_id} subscribe on socket: ${socket.id}`);
+    config.log.info(`${isAdmin ? 'Admin' : 'User'}: ${user_id} subscribe on socket: ${socket.id}`);
   }
 
-  leaveRoom(socket: Socket, user_id: string) {
+  onDisconnect(socket: Socket, user_id: string, isAdmin?: boolean) {
     delete this.users[user_id];
     socket.leave(user_id);
-    config.log.info(`User: ${user_id} unsubscribe on socket: ${socket.id}`);
+    socket.disconnect();
+    config.log.info(`${isAdmin ? 'Admin' : 'User'}: ${user_id} logged-out and unsubscribe on socket: ${socket.id}`);
   }
 };
 

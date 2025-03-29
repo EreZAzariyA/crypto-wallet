@@ -1,9 +1,9 @@
-import { App } from "antd";
-import { CoinsType } from "../utils/enums";
+import { App, message } from "antd";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import walletServices from "../services/wallets";
 import { WalletModel } from "../models";
 import { queryClient } from "../main";
+import { CoinsType } from "../utils/coinsUtils";
 
 interface UseWalletsProps {
   user_id: string;
@@ -11,7 +11,6 @@ interface UseWalletsProps {
 
 export const useWallets = ({ user_id }: Partial<UseWalletsProps>) => {
   const { notification } = App.useApp();
-
   const { isPending, data, isError, refetch } = useQuery({
     queryKey: ['wallets', user_id],
     queryFn: async () => walletServices.getUserWallets(user_id),
@@ -25,7 +24,7 @@ export const useWallets = ({ user_id }: Partial<UseWalletsProps>) => {
     onSuccess: (wallet) => {
       queryClient.invalidateQueries({ queryKey: ['wallets', user_id] });
       notification.success({ message: `Wallet ${wallet.name} created successfully` });
-    }
+    },
   });
 
   const wallets: Record<string, WalletModel> = {};
@@ -36,6 +35,10 @@ export const useWallets = ({ user_id }: Partial<UseWalletsProps>) => {
   }
 
   const createWallet = async (coin: CoinsType) => {
+    if (!user_id) {
+      message.error('no user id');
+      return;
+    }
     try {
       return await mutation.mutateAsync({ user_id, coin });
     } catch (error: any) {

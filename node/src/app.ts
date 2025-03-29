@@ -3,7 +3,7 @@ import http from 'http';
 import cookieParser from 'cookie-parser';
 import express, { Request, Response } from 'express';
 import { SocketIo, connectToMongoDB } from './dal';
-import { authRouter, adminRouter, walletsRouter } from './routes';
+import { authRouter, adminRouter, walletsRouter, transactionsRouter } from './routes';
 import { errorsHandler, verifyToken } from './middlewares';
 import { CoinTypes } from './bll';
 import cronJobs from './workers';
@@ -16,13 +16,14 @@ app.use(cookieParser(config.secretKey));
 app.use(express.json());
 
 app.use(cors({
-  origin: ['http://localhost:5173', 'http://localhost:5174'],
+  origin: ['http://localhost:4000', 'http://localhost:4001'],
   credentials: true,
   methods: ['GET', 'PUT', 'POST', 'PATCH', 'DELETE', 'OPTIONS']
 }));
 
 app.use('/api/auth', authRouter);
 app.use('/api/admin', verifyAdmin, adminRouter);
+app.use('/api/transactions', verifyToken, transactionsRouter);
 app.use('/api/wallet', verifyToken, walletsRouter);
 
 app.use('*', async(_: Request, res: Response) => {

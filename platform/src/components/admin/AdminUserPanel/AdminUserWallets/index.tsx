@@ -1,8 +1,7 @@
 import { useWallets } from "../../../../hooks/useWallets";
-import { SupportedCoins } from "../../../../utils/helpers";
-import { CoinsType } from "../../../../utils/enums";
 import { Button, Card, Col, Flex, Row, Spin, Typography } from "antd";
 import { useState } from "react";
+import { CoinsType, SupportedCoins } from "../../../../utils/coinsUtils";
 
 const EllipsisText = (props: { text: string, copyable?: boolean }) => (
   <Typography.Text

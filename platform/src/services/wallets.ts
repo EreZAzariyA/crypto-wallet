@@ -1,8 +1,7 @@
 import axios from "axios";
 import { WalletModel } from "../models";
 import config from "../utils/config";
-import { CoinsType } from "../utils/enums";
-
+import { CoinsType } from "../utils/coinsUtils";
 
 class WalletsServices {
 

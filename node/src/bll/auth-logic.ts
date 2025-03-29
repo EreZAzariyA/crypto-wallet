@@ -21,6 +21,7 @@ class AuthenticationLogic {
   };
 
   signin = async (credentials: CredentialsModel): Promise<string> => {
+    // admin: { $exists: false }
     const user = await Users.findOne({ 'emails.email': credentials.email }).exec();
     if (!user) {
       throw new ClientError(400, ErrorMessages.INCORRECT_PASSWORD);
@@ -48,7 +49,6 @@ class AuthenticationLogic {
 
     const userObj = removeServicesFromUser(user);
     const token = jwtService.getNewToken(userObj);
-
     return token;
   };
 };

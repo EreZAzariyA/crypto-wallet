@@ -23,7 +23,8 @@ class SocketIo {
     this.sendHandshake(user_id);
     this.startListeners(this.socket, user_id);
   };
-  disconnect() {
+  disconnect(user_id: string) {
+    this.socket.emit('user-disconnect', user_id);
     this.socket.disconnect();
   };
 
@@ -31,9 +32,9 @@ class SocketIo {
     this.socket.emit('user-connected', user_id);
   };
 
-  userDisconnect(user_id: string) {
-    this.socket.emit('user-disconnect', user_id);
-  };
+  // userDisconnect(user_id: string) {
+    
+  // };
 
   async sendHandshake(user_id: string) {
     console.log('Sending handshake to server...');

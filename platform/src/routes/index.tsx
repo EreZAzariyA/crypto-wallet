@@ -7,6 +7,7 @@ const PublicRoute = lazy(() => import("./PublicRoute"));
 const SignIn = lazy(() => import("../components/auth/sign-in"));
 const SignUp = lazy(() => import("../components/auth/sign-up"));
 const Dashboard = lazy(() => import("../components/dashboard"));
+const Wallets = lazy(() => import("../components/wallets"));
 const AdminDashboard = lazy(() => import("../components/admin/AdminDashboard"));
 const AdminUsers = lazy(() => import("../components/admin/admin-users"));
 const Transactions = lazy(() => import("../components/transactions"));
@@ -19,6 +20,7 @@ export const UserRoutes: RouteObject = {
   element: <PrivateRoute />,
   children: [
     { path: "dashboard", element: <Dashboard /> },
+    { path: "wallets", element: <Wallets /> },
     { path: "transactions", element: <Transactions /> },
     { path: "sign-out", element: <p>sign-out</p> },
   ],

@@ -18,7 +18,8 @@ export interface ITransaction extends Document {
   coin: CoinTypes,
   amount: number;
   status: string;
-  type: TransactionType
+  type: TransactionType,
+  user_id: string
 };
 
 export const TransactionSchema = new Schema<ITransaction>({
@@ -52,8 +53,18 @@ export const TransactionSchema = new Schema<ITransaction>({
     type: Number,
     required: true
   },
-  status: String,
-  type: String
+  status: {
+    type: String,
+    required: true
+  },
+  type: {
+    type: String,
+    required: true
+  },
+  user_id: {
+    type: String,
+    required: true
+  }
 }, {
   versionKey: false,
   autoIndex: true

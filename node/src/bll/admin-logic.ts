@@ -13,9 +13,9 @@ class AdminLogic {
       queryOptions
     ).exec();
 
-    const usersIds = users.map((user) => user._id);
-    const wallets = await Wallets.find({ user_id: { $in: usersIds }}).lean().exec();
-    const usersWallets = new Map(wallets.map((wallet) => [wallet.user_id.toString(), wallet]));
+    // const usersIds = users.map((user) => user._id);
+    // const wallets = await Wallets.find({ user_id: { $in: usersIds }}).lean().exec();
+    // const usersWallets = new Map(wallets.map((wallet) => [wallet.user_id.toString(), wallet]));
 
     return {
       // users: users.map((user) => ({

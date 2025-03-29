@@ -61,7 +61,7 @@ class WalletsLogic {
       throw new ClientError(400, 'User not found');
     }
 
-    return await Wallets.find({ user_id }).exec();
+    return await Wallets.find({ user_id }, { privateKey: 0, isTestNet: 0, hex: 0 }).exec();
   };
 
   async getUserWalletByCoin(user_id: string, coin: CoinTypes): Promise<IWalletModel> {
@@ -88,7 +88,7 @@ class WalletsLogic {
       throw new ClientError(400, 'Wallet not found');
     }
 
-    return await service.sendCoin(userWallet, to, amount);
+    return service.sendCoin(userWallet, to, amount);
   };
 
 };

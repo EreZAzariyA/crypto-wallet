@@ -50,7 +50,7 @@ const updateUsersETHBalance = async () => {
         wallet.walletBalance = balance
         wallet.save();
         config.log.info(`Balance for ${coin} wallet ${wallet._id} updated to ${balance}`);
-        socket.sendMessage('wallet-balance', wallet.user_id.toString(), { coin, wallet });
+        socket.sendMessage('wallet-balance', wallet.user_id.toString(), { coin, wallet, balance });
       }
     }
   }

@@ -8,6 +8,7 @@ import { ClientError, ITransaction, IWalletModel, TransactionsStatus, } from "..
 import WalletBaseService from "./WalletBaseService";
 import { isArrayAndNotEmpty, USDT_ERC20_CONTRACT_ABI } from "../utils/helpers";
 import BN from 'bn.js';
+import { socket } from "../app";
 
 const ETHERSCAN_API_KEY = "8NBT2T4PQ1QB4UKIJXSAZKSXJPD7N3XYJ4";
 const USDT_ERC20_CONTRACT_ADDRESS = "0xdAC17F958D2ee523a2206206994597C13D831ec7";
@@ -139,8 +140,6 @@ export const scanBlocks = async (web3: Web3) => {
     walletsObj[wallet.address.toLowerCase()] = wallet;
   });
 
-  let relevantTransactions = [];
-
   for (let blockNumber = startBlock; blockNumber <= endBlock; blockNumber++) {
     config.log.debug(`Scanning block ${blockNumber}...`);
 
@@ -159,12 +158,26 @@ export const scanBlocks = async (web3: Web3) => {
 
       if (relevantTxs.length > 0) {
         console.log(`🚀 Found transactions in block ${blockNumber}:`, relevantTxs);
-        relevantTxs.map((tnx) => {
+        for (const tnx of relevantTxs) {
           if (typeof tnx === 'string') return;
 
-          const isSent = Object.keys(walletsObj).includes(tnx.from);
+          const senderAddress = tnx.from?.toLowerCase();
+          const receiverAddress = tnx.to?.toLowerCase();
+          const isSent = senderAddress && walletsObj[senderAddress];
+          const receipt = await web3.eth.getTransactionReceipt(tnx.hash);
+          const timestamp = Number(block.timestamp) * 1000;
+          const date = new Date(timestamp).toISOString();
 
-          new Transactions({
+          const user_id = walletsObj[isSent ? senderAddress : receiverAddress]?.user_id;
+          const type = isSent ? TransactionType.Sent : TransactionType.Receive;
+
+          const status = !receipt
+            ? "pending"
+            : receipt.status
+              ? "completed"
+              : "denied";
+
+          const addedTransaction = await new Transactions({
             blockNumber: Number(tnx.blockNumber),
             coin: CoinTypes.ETH,
             blockHash: tnx.blockHash,
@@ -172,27 +185,30 @@ export const scanBlocks = async (web3: Web3) => {
             hash: tnx.hash,
             to: tnx.to,
             transactionIndex: Number(tnx.transactionIndex),
-            amount: isSent ? -Number(web3.utils.fromWei(tnx.value, 'ether')) : Number(web3.utils.fromWei(tnx.value, 'ether')),
-            type: isSent ? TransactionType.Sent : TransactionType.Receive
+            amount: isSent
+              ? -Number(web3.utils.fromWei(tnx.value, "ether"))
+              : Number(web3.utils.fromWei(tnx.value, "ether")),
+            type,
+            user_id,
+            status,
+            date,
           }).save();
-
+          if (!isSent) {
+            socket.sendMessage('transaction:new', user_id, {
+              coin: addedTransaction.coin,
+              from: addedTransaction.from,
+              amount: addedTransaction.amount,
+              status: addedTransaction.status
+            });
+          }
           console.log(`✅ Saved trans.`);
-        })
+        }
 
-        // Add relevant transactions to the list for saving
       }
 
     } catch (error) {
       console.error(`Error scanning block ${blockNumber}:`, error);
     }
-  }
-
-  if (relevantTransactions.length > 0) {
-    console.log({ relevantTransactions });
-    // Save the relevant transactions to your database (make sure you have a suitable collection)
-    // Example: assuming you have a `Transactions` model to save the transactions
-  } else {
-    console.log(`No relevant transactions found.`);
   }
 
   console.log(`Scan blocks done...`);
@@ -209,12 +225,15 @@ const checkAmount = async (web3: Web3, senderAddress: string, ) => {
   const balance = BigInt(await web3.eth.getBalance(senderAddress)); // BigInt
 
   const maxSendable = balance - gasPrice * gasLimit;
-  console.log({ maxSendable });
-  
   return maxSendable;
 };
 
-const updateWalletBalance = async (web3: Web3, tx: Transaction, receipt: TransactionReceipt, wallet: IWalletModel) => {
+const updateWalletBalance = async (
+  web3: Web3,
+  tx: Transaction,
+  receipt: TransactionReceipt,
+  wallet: IWalletModel
+) => {
   const sentAmount = new BN(tx.value.toString());
 
   const gasUsed = new BN(receipt.gasUsed.toString());
@@ -222,11 +241,11 @@ const updateWalletBalance = async (web3: Web3, tx: Transaction, receipt: Transac
 
   const gasFee = gasUsed.mul(gasPrice);
   const totalSpent = sentAmount.add(gasFee);
-  
+
   console.log("Sent Amount (Wei):", sentAmount.toString());
   console.log("Gas Fee (Wei):", gasFee.toString());
   console.log("Total Spent (Wei):", totalSpent.toString());
-  
+
   const totalSpentInEther = web3.utils.fromWei(totalSpent.toString(), "ether");
   console.log("Total Spent (ETH):", totalSpentInEther);
 
@@ -234,13 +253,19 @@ const updateWalletBalance = async (web3: Web3, tx: Transaction, receipt: Transac
     wallet.walletBalance -= Number(totalSpentInEther);
     return await wallet.save({
       validateBeforeSave: true,
-      timestamps: true
+      timestamps: true,
     });
   } catch (error) {
-    throw new ClientError(500, `Error while trying to calculate the new balance: ${error?.message}`);
+    throw new ClientError(
+      500,
+      `Error while trying to calculate the new balance: ${error?.message}`
+    );
   }
-}
+};
 
+const sendCoinDetails = async () => {
+
+}
 
 class ETHBaseService extends WalletBaseService {
   public coin: CoinTypes = CoinTypes.ETH;
@@ -259,7 +284,8 @@ class ETHBaseService extends WalletBaseService {
         name: coin,
         address: wallet.address,
         privateKey: wallet.privateKey,
-        lastScanBlock: Number(lastBlock)
+        lastScanBlock: Number(lastBlock),
+        hex: wallet.address,
       };
 
       return await this.saveWallet(user_id, newWallet);
@@ -324,15 +350,17 @@ class ETHBaseService extends WalletBaseService {
   };
 
   async sendCoin(wallet: IWalletModel, toAddress: string, amountInEth: number): Promise<{ receipt: TransactionReceipt, wallet: IWalletModel }> {
-    const value = this.web3.utils.toWei(amountInEth, "ether"); // Convert 0.1 ETH to Wei
-    try {
-      const gasPrice = await this.web3.eth.getGasPrice();
-      const nonce = await this.web3.eth.getTransactionCount(wallet.address, "latest");
-      const maxAmount = await checkAmount(this.web3, wallet.address);
-      if (Number(value) > Number(maxAmount)) {
-        throw new ClientError(500, 'error?.message');
-      }
+    const value = this.web3.utils.toWei(amountInEth, "ether");
 
+    const gasPrice = await this.web3.eth.getGasPrice();
+    const gasPriceEth = this.web3.utils.fromWei(gasPrice, "ether");
+    const nonce = await this.web3.eth.getTransactionCount(wallet.address, "latest");
+    const maxAmount = await checkAmount(this.web3, wallet.address);
+    if (Number(value) > Number(maxAmount)) {
+      throw new ClientError(500, `You don't have enough balance for gas price (${gasPriceEth})`);
+    }
+
+    try {
       const tx: Transaction = {
         from: wallet.address,
         to: toAddress,

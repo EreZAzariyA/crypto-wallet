@@ -21,11 +21,11 @@ router.post("/signin", async (req: Request, res: Response, next: NextFunction) =
     const credentials = new CredentialsModel(req.body);
     const token = await authLogic.signin(credentials);
     res.cookie('token', token, {
-      httpOnly: config.isProduction,
       maxAge: config.loginExpiresIn,
-      secure: config.isProduction,
+      httpOnly: false,
+      secure: false,
+      sameSite: 'lax',
       priority: 'high',
-      path: '/'
     }).status(201).json(token);
   } catch (err: any) {
     next(err);

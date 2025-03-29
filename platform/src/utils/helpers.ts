@@ -1,21 +1,13 @@
 import { useEffect, useState } from "react";
 import dayjs from "dayjs";
 import UserModel from "../models/user-model";
-import { CoinsType, ThemeColors } from "./enums";
-
-export const SupportedCoins = [
-  CoinsType.TRX,
-  CoinsType.ETH,
-  CoinsType.USDC_ERC20,
-  CoinsType.USDC_TRC20,
-  CoinsType.USDT_ERC20,
-  CoinsType.USDT_TRC20
-];
+import { ThemeColors } from "./enums";
 
 export type ColorType = {
   ICON: string;
   DANGER: string;
 };
+
 export const Colors: ColorType  = {
   ICON: '#08c',
   DANGER: 'red'

@@ -1,15 +1,9 @@
 import { Middleware } from "@reduxjs/toolkit";
-import { updateAddress } from "../slicers/wallets-slicer";
 import socketServices from "../../services/socketServices";
 
 const socketMiddleware: Middleware = (store) => (next) => (action) => {
-  const { dispatch, getState } = store;
+  const { getState } = store;
   const socketIo = socketServices;
-
-  socketIo.socket.on('wallet-balance', ({ coin, wallet }) => {
-    dispatch(updateAddress({ coin, wallet }));
-    console.log('wallet updated');
-  });
 
   socketIo.socket.io.on('reconnect', () => {
     console.log('Server reconnected...');

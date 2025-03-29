@@ -1,7 +1,7 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { WalletModel } from "../../models";
 import walletServices from "../../services/wallets";
-import { CoinsType } from "../../utils/enums";
+import { CoinsType } from "../../utils/coinsUtils";
 
 export enum WalletActions {
   CREATE_WALLET = "wallet/create-wallet",
@@ -33,7 +33,7 @@ export const sendCoinsAction = createAsyncThunk<WalletModel[], { wallet: WalletM
       const trans = await walletServices.sendCoins(wallet, to, amount);
       return thunkApi.fulfillWithValue(trans);
     } catch (error: any) {
-      return thunkApi.rejectWithValue(error?.message);
+      return thunkApi.rejectWithValue(error);
     }
   },
 );

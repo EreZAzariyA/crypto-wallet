@@ -13,7 +13,8 @@ abstract class Config {
       createWallet: "",
       getWallets: "",
       sendCoins: "",
-    }
+    },
+    transactions: "",
   };
 
   public constructor(baseUrl: string) {
@@ -31,7 +32,8 @@ abstract class Config {
         createWallet: baseUrl + 'wallet/create-wallet',
         getWallets: baseUrl +  "wallet/get-wallets",
         sendCoins: baseUrl +  "wallet/send-coins"
-      }
+      },
+      transactions: baseUrl +  "transactions",
     }
   };
 };

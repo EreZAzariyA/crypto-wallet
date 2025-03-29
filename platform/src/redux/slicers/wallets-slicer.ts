@@ -80,10 +80,8 @@ const walletsSlicer = createSlice({
   name: 'wallet',
   initialState,
   reducers: {
-    updateAddress(state, action) {
+    updateAddress(state: WalletsState, action) {
       const { coin, wallet } = action.payload;
-      console.log({ coin, wallet });
-      
       state.wallets[coin] = wallet;
     },
     clearWallets(state) {

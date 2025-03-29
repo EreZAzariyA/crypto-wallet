@@ -13,6 +13,7 @@ import { BsReceipt } from "react-icons/bs";
 import { RxDashboard } from "react-icons/rx";
 import { VscAccount } from "react-icons/vsc";
 import { PiUsersThreeLight } from "react-icons/pi";
+import { LiaWalletSolid } from "react-icons/lia";
 import { useIdleTimer } from "react-idle-timer";
 import socketServices from "../services/socketServices";
 import { getUserWalletsAction } from "../redux/actions/wallets-actions";
@@ -49,9 +50,9 @@ const DashboardView = (props: { admin?: boolean }) => {
     socketServices.connect(user_id);
 
     return () => {
-      socketServices.disconnect();
+      socketServices.disconnect(user_id);
     }
-  }, [user_id]);
+  }, []);
 
   useEffect(() => {
     if (!admin && user_id) {
@@ -61,6 +62,7 @@ const DashboardView = (props: { admin?: boolean }) => {
 
   const icons: any = {
     dashboard: <RxDashboard size={Sizes.MENU_ICON} />,
+    wallets: <LiaWalletSolid size={Sizes.MENU_ICON} />,
     transactions: <BsReceipt size={Sizes.MENU_ICON} />,
     account: <VscAccount size={Sizes.MENU_ICON} />,
     users: <PiUsersThreeLight size={Sizes.MENU_ICON} />,
