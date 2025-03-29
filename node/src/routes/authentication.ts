@@ -1,13 +1,14 @@
 import express, { NextFunction, Request, Response } from "express";
-import { UserModel, CredentialsModel } from "../models";
-import authLogic from "../bll/auth-logic";
+import { CredentialsModel } from "../models";
+import { Users } from "../collections";
+import { authLogic } from "../bll";
 import config from "../utils/config";
 
 const router = express.Router();
 
 router.post("/signup", async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const user = new UserModel(req.body);
+    const user = new Users(req.body);
     await authLogic.signup(user);
     res.sendStatus(201);
   } catch (err: any) {
@@ -18,14 +19,14 @@ router.post("/signup", async (req: Request, res: Response, next: NextFunction) =
 router.post("/signin", async (req: Request, res: Response, next: NextFunction) => {
   try {
     const credentials = new CredentialsModel(req.body);
-    const { token, user_id } = await authLogic.signin(credentials);
+    const token = await authLogic.signin(credentials);
     res.cookie('token', token, {
       httpOnly: config.isProduction,
       maxAge: config.loginExpiresIn,
       secure: config.isProduction,
       priority: 'high',
       path: '/'
-    }).status(201).json(user_id);
+    }).status(201).json(token);
   } catch (err: any) {
     next(err);
   }

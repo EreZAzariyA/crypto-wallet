@@ -1,5 +1,5 @@
-import { Document, model, Schema } from "mongoose";
-import { CoinTypes } from "../bll/wallets";
+import { Document, Schema } from "mongoose";
+import { CoinTypes, TransactionType } from "../bll";
 
 export const TransactionsStatus = {
   Success: 'Success',
@@ -18,24 +18,22 @@ export interface ITransaction extends Document {
   coin: CoinTypes,
   amount: number;
   status: string;
+  type: TransactionType
 };
 
-const TransactionSchema = new Schema<ITransaction>({
+export const TransactionSchema = new Schema<ITransaction>({
   blockNumber: {
     type: Number,
     required: true,
-    unique: true
   },
   date: String,
   hash: {
     type: String,
     required: true,
-    unique: true
   },
   blockHash: {
     type: String,
     required: true,
-    unique: true
   },
   transactionIndex: Number,
   from: {
@@ -55,10 +53,8 @@ const TransactionSchema = new Schema<ITransaction>({
     required: true
   },
   status: String,
+  type: String
 }, {
   versionKey: false,
   autoIndex: true
 });
-
-const TransactionModel = model<ITransaction>('Transaction', TransactionSchema, 'transactions');
-export default TransactionModel;

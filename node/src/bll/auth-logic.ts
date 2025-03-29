@@ -1,9 +1,8 @@
-import { ClientError, IUserModel, UserModel } from "../models";
-import CredentialsModel from "../models/credentials-model";
+import { Users } from "../collections";
+import { ClientError, IUserModel, CredentialsModel } from "../models";
 import { comparePassword, encryptPassword } from "../utils/bcrypt-utils";
 import { removeServicesFromUser, ErrorMessages, MAX_LOGIN_ATTEMPTS } from "../utils/helpers";
 import jwtService from "../utils/jwt";
-
 
 class AuthenticationLogic {
   signup = async (user: IUserModel): Promise<string> => {
@@ -21,8 +20,8 @@ class AuthenticationLogic {
     return token;
   };
 
-  signin = async (credentials: CredentialsModel): Promise<{ token: string, user_id: string }> => {
-    const user = await UserModel.findOne({ 'emails.email': credentials.email }).exec();
+  signin = async (credentials: CredentialsModel): Promise<string> => {
+    const user = await Users.findOne({ 'emails.email': credentials.email }).exec();
     if (!user) {
       throw new ClientError(400, ErrorMessages.INCORRECT_PASSWORD);
     }
@@ -47,12 +46,11 @@ class AuthenticationLogic {
     };
     await user.save({ validateBeforeSave: true });
 
-    const userWithoutServices = removeServicesFromUser(user);
-    const token = jwtService.getNewToken(userWithoutServices);
+    const userObj = removeServicesFromUser(user);
+    const token = jwtService.getNewToken(userObj);
 
-    return { token, user_id: user._id.toString() };
+    return token;
   };
 };
 
-const authLogic = new AuthenticationLogic();
-export default authLogic;
+export const authLogic = new AuthenticationLogic();

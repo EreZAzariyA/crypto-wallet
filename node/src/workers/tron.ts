@@ -1,27 +1,26 @@
 import cron from "node-cron";
-import { CoinTypes } from "../bll/wallets";
-import Wallets from "../models/wallet-model";
-import tronLogic from "../bll/tron-logic";
-import config from "../utils/config";
-import { socket } from "../app";
 import Web3 from "web3";
-import Web3Provider from "../dal/web3";
+import config from "../utils/config";
+import { Web3Provider } from "../dal";
+import { Wallets } from "../collections";
+import { tronLogic, CoinTypes } from "../bll";
+import { socket } from "../app";
 import WalletServiceFactory from "../services/WalletServiceFactory";
-import { scanBlocks } from "../services/EthService";
+import { scanBlocks } from "../services/ETHBaseService";
 
 const updateUsersTronBalance = async () => {
   const coin = CoinTypes.TRX
-  const tronWallets = await Wallets.find({ name: coin }).exec();
+  const tronWallets = await Wallets.find({ network: coin }).exec();
   if (Array.isArray(tronWallets) && tronWallets.length) {
 
     for (const wallet of tronWallets) {
-      const walletBalance = await tronLogic.getBalance(wallet.address);
+      const walletBalance = await tronLogic.getBalance(wallet);
 
       if (wallet.walletBalance !== walletBalance) {
         wallet.walletBalance = walletBalance;
         wallet.save();
         config.log.info(`Balance for TRX wallet ${wallet._id} updated to ${walletBalance}`);
-        socket.sendMessage('wallet-balance', wallet.user_id.toString(), { coin, wallet });
+        socket.sendMessage('wallet-balance', wallet.user_id.toString(), { coin: wallet.name, wallet });
       }
     }
   }
@@ -43,7 +42,6 @@ const updateUsersETHBalance = async () => {
   const ethWallets = await Wallets.find({ name: coin }).exec();
   if (Array.isArray(ethWallets) && ethWallets.length) {
     for (const wallet of ethWallets) {
-      // await ethService.fetchTransactions(wallet.address);
       const bigintBalance = await web3.eth.getBalance(wallet.address);
       const balanceInEther = web3.utils.fromWei(bigintBalance, 'ether');
       const  balance = Number(balanceInEther);
@@ -65,6 +63,6 @@ export const tronJob = cron.schedule("*/30 * * * * *", async () => {
 export const ethJob = cron.schedule("*/30 * * * * *", async () => {
   console.log("Checking ETH address", new Date().toLocaleString());
   await updateUsersETHBalance();
-  // await scanBlocks(web3);
+  await scanBlocks(web3);
 });
 

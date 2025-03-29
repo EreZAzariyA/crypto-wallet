@@ -2,7 +2,7 @@ import { ScheduledTask } from "node-cron";
 import { CoinTypes } from "../bll/wallets";
 import { ethJob, tronJob } from "./tron";
 
-type CronJobsType = Record<CoinTypes, { run: boolean, job: ScheduledTask }>
+type CronJobsType = Partial<Record<CoinTypes, { run: boolean, job: ScheduledTask }>>
 
 const Jobs: CronJobsType = {
   [CoinTypes.TRX]: {
@@ -12,7 +12,7 @@ const Jobs: CronJobsType = {
   [CoinTypes.ETH]: {
     run: false,
     job: ethJob
-  }
+  },
 };
 
 class CronJobs {

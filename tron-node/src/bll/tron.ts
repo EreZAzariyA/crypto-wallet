@@ -1,6 +1,6 @@
 import tronWeb from "../dal/tronweb";
 
-class TronService {
+class TronBaseService {
   public tron = tronWeb;
 
   async createWallet() {
@@ -15,5 +15,5 @@ class TronService {
 
 };
 
-const tronService = new TronService();
+const tronService = new TronBaseService();
 export default tronService;

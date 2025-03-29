@@ -1,10 +1,10 @@
 import ClientError from './client-error';
-import { UserModel, IUserModel } from './user-model';
-import CredentialsModel from './credentials-model'
+import CredentialsModel from './credentials-model';
+export * from './user-model';
+export * from './wallet-model';
+export * from './transaction-model';
 
 export {
   ClientError,
-  UserModel,
-  IUserModel,
   CredentialsModel
 };

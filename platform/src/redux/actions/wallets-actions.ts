@@ -1,11 +1,12 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import walletServices from "../../services/wallets";
 import { WalletModel } from "../../models";
+import walletServices from "../../services/wallets";
 import { CoinsType } from "../../utils/enums";
 
 export enum WalletActions {
   CREATE_WALLET = "wallet/create-wallet",
   GET_WALLETS = "wallet/get-wallet",
+  SEND_COINS = "wallet/send-coins",
 };
 
 export const createWalletAction = createAsyncThunk<WalletModel, { user_id: string, coin: CoinsType }>(
@@ -23,4 +24,16 @@ export const createWalletAction = createAsyncThunk<WalletModel, { user_id: strin
 export const getUserWalletsAction = createAsyncThunk<WalletModel[], string>(
   WalletActions.GET_WALLETS,
   async (user_id) => await walletServices.getUserWallets(user_id),
+);
+
+export const sendCoinsAction = createAsyncThunk<WalletModel[], { wallet: WalletModel, to: string, amount: number }>(
+  WalletActions.SEND_COINS,
+  async ({ wallet, to, amount }, thunkApi) => {
+    try {
+      const trans = await walletServices.sendCoins(wallet, to, amount);
+      return thunkApi.fulfillWithValue(trans);
+    } catch (error: any) {
+      return thunkApi.rejectWithValue(error?.message);
+    }
+  },
 );

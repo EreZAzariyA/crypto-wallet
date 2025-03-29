@@ -1,9 +1,8 @@
 import axios from "axios";
 import { CredentialResponse } from "@react-oauth/google";
 import { createAsyncThunk } from "@reduxjs/toolkit";
-// import UserModel from "../../models/user-model";
+import { CredentialsModel } from "../../models";
 import config from "../../utils/config";
-import CredentialsModel from "../../models/credentials-model";
 
 export enum AuthActions {
   SIGN_UP = "auth/sign-up",
@@ -23,7 +22,7 @@ export const signupAction = createAsyncThunk<string>(
   }
 );
 
-export const signinAction = createAsyncThunk<{ user_id: string }, CredentialsModel>(
+export const signinAction = createAsyncThunk<string, CredentialsModel>(
   AuthActions.SIGN_IN,
   async (credentials, thunkApi) => {
     try {
@@ -31,8 +30,8 @@ export const signinAction = createAsyncThunk<{ user_id: string }, CredentialsMod
         throw new Error('Some fields are missing');
       }
       const res = await axios.post<string>(config.urls.auth.signIn, credentials);
-      const user_id = res.data;
-      return thunkApi.fulfillWithValue({ user_id });
+      const token = res.data;
+      return thunkApi.fulfillWithValue(token);
     } catch (err) {
       return thunkApi.rejectWithValue(err);
     }

@@ -1,99 +1,82 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAppDispatch, useAppSelector } from "../redux/store";
 import { logoutAction } from "../redux/actions/auth-actions";
 import DashboardHeader from "./DashboardHeader";
 import { Colors, Sizes, useResize } from "../utils/helpers";
-import { MenuItem, getMenuItem } from "../utils/antd";
+import { MenuItem } from "../utils/antd";
 import { ThemeColors } from "../utils/enums";
 import { Layout, Menu, MenuProps } from "antd";
-import { AiOutlineLogout, AiOutlineProfile } from "react-icons/ai";
-import { BiLogInCircle } from "react-icons/bi";
+import { AiOutlineLogout } from "react-icons/ai";
 import { BsReceipt } from "react-icons/bs";
-import { FaAddressCard } from "react-icons/fa";
 import { RxDashboard } from "react-icons/rx";
 import { VscAccount } from "react-icons/vsc";
+import { PiUsersThreeLight } from "react-icons/pi";
 import { useIdleTimer } from "react-idle-timer";
+import socketServices from "../services/socketServices";
+import { getUserWalletsAction } from "../redux/actions/wallets-actions";
+import { AdminRoutes, UserRoutes } from "../routes";
 
 const { Sider, Content } = Layout;
 
-const DashboardView = () => {
+const DashboardView = (props: { admin?: boolean }) => {
+  const { admin } = props;
   const dispatch = useAppDispatch();
   const { t } = useTranslation();
-  const location = useLocation();
-  const { pathname } = location;
+  const { pathname } = useLocation();
   const { isMobile } = useResize();
-  const { user_id } = useAppSelector((state) => state.auth);
+  const { _id: user_id } = useAppSelector((state) => state.auth.user);
 
   const [isCollapsed, setIsCollapsed] = useState<boolean>(isMobile);
   const [current, setCurrent] = useState<string>('dashboard');
 
   const isDarkTheme = false;
   const themeToSet = isDarkTheme ? ThemeColors.DARK : ThemeColors.LIGHT;
-  const isEN = true;
-  const style: React.CSSProperties = {
-    textAlign: isEN ? 'left' : 'right'
-  }
 
   useIdleTimer({
-    timeout: 1000 * 60 * 10,
+    timeout: 1000 * 60 * 5,
     onIdle: () => dispatch(logoutAction()),
   });
 
   useEffect(() => {
-    const path = pathname.split('/')[1];
-    setCurrent(path);
+    const locationArray = pathname.split('/');
+    const currentLocation = locationArray[locationArray.length - 1];
+    setCurrent(currentLocation);
   }, [pathname]);
 
-  const accountItems = user_id ? [
-    getMenuItem(
-      <Link to='/profile'>{t('menu.account.1')}</Link>,
-      'profile',
-      <AiOutlineProfile size={Sizes.SUB_MENU_ICON} />,
-      undefined, style
-    ),
-    getMenuItem(
-      t('menu.account.5'),
-      'sign-out',
-      <AiOutlineLogout color={Colors.DANGER} size={Sizes.SUB_MENU_ICON} />,
-      undefined, style
-    )
-  ] : [
-    getMenuItem(
-      'Sign-in',
-      'auth/sign-in',
-      <BiLogInCircle size={Sizes.SUB_MENU_ICON} />,
-      undefined, style
-    ),
-    getMenuItem(
-      'Sign-up',
-      'auth/sign-up',
-      <FaAddressCard size={Sizes.SUB_MENU_ICON} />,
-      undefined, style
-    )
-  ];
+  useEffect(() => {
+    socketServices.connect(user_id);
 
-  const items: MenuItem[] = [
-    getMenuItem(
-      <Link to={'/dashboard'}>{t('menu.dashboard')}</Link>,
-      'dashboard',
-      <RxDashboard size={Sizes.MENU_ICON} />,
-      undefined, style
-    ),
-    getMenuItem(
-      <Link to='/transactions'>{t('menu.transactions')}</Link>,
-      'transactions',
-      <BsReceipt size={Sizes.MENU_ICON} />,
-      undefined, style
-    ),
-    getMenuItem(
-      t('menu.account.0'),
-      'account',
-      <VscAccount size={Sizes.MENU_ICON} />,
-      accountItems, style
-    )
-  ];
+    return () => {
+      socketServices.disconnect();
+    }
+  }, [user_id]);
+
+  useEffect(() => {
+    if (!admin && user_id) {
+      dispatch(getUserWalletsAction(user_id));
+    }
+  }, [dispatch, user_id, admin]);
+
+  const icons: any = {
+    dashboard: <RxDashboard size={Sizes.MENU_ICON} />,
+    transactions: <BsReceipt size={Sizes.MENU_ICON} />,
+    account: <VscAccount size={Sizes.MENU_ICON} />,
+    users: <PiUsersThreeLight size={Sizes.MENU_ICON} />,
+    "sign-out": <AiOutlineLogout color={Colors.DANGER} size={Sizes.SUB_MENU_ICON} />,
+  };
+
+  const routes = admin ? AdminRoutes : UserRoutes;
+  const menuItems: MenuItem[] = routes.children.map((route) => {
+    const routeName = route.path.split('/')[route.path.split('/').length - 1];
+
+    return {
+      label: <Link to={route.path}>{t(`menu.${routeName}`)}</Link>,
+      key: routeName,
+      icon: icons[routeName],
+    }
+  });
 
   const onClick: MenuProps['onClick'] = async (e) => {
     if (e.key === 'sign-out') {
@@ -107,7 +90,7 @@ const DashboardView = () => {
     <Layout className="main-layout">
       <DashboardHeader
         collapsedHandler={() => setIsCollapsed(!isCollapsed)}
-        items={items}
+        items={menuItems}
       />
       <Layout hasSider>
         {!isMobile && (
@@ -121,7 +104,7 @@ const DashboardView = () => {
             <Menu
               mode="inline"
               theme={themeToSet}
-              items={items}
+              items={menuItems}
               onClick={onClick}
               selectedKeys={[current]}
             />

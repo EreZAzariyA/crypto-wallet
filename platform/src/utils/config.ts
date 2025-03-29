@@ -6,9 +6,13 @@ abstract class Config {
       googleSignIn: "",
       logout: ""
     },
+    admin: {
+      getUsers: "",
+    },
     wallet: {
       createWallet: "",
       getWallets: "",
+      sendCoins: "",
     }
   };
 
@@ -20,9 +24,13 @@ abstract class Config {
         googleSignIn: baseUrl + "auth/google",
         logout: baseUrl + "auth/logout",
       },
+      admin: {
+        getUsers: baseUrl + 'admin/get-users'
+      },
       wallet: {
         createWallet: baseUrl + 'wallet/create-wallet',
-        getWallets: baseUrl +  "wallet/get-wallets"
+        getWallets: baseUrl +  "wallet/get-wallets",
+        sendCoins: baseUrl +  "wallet/send-coins"
       }
     }
   };

@@ -1,6 +1,6 @@
-import { Document, Schema, Types, model } from "mongoose";
+import { Document, Schema, model } from "mongoose";
 
-export type GoogleUserType = {
+type GoogleUserType = {
   sub: string;
   name: string;
   given_name: string;
@@ -11,7 +11,7 @@ export type GoogleUserType = {
   locale: string;
 };
 
-export type EmailType = {
+type EmailType = {
   email: string,
   isValidate: boolean,
   isActive: boolean
@@ -52,6 +52,7 @@ const GoogleUserSchema = new Schema<GoogleUserType>({
 }, { _id: false, autoIndex: true });
 
 export interface IUserModel extends Document {
+  admin: boolean;
   profile: {
     first_name: string;
     last_name: string;
@@ -71,6 +72,7 @@ export interface IUserModel extends Document {
 };
 
 export const UserSchema = new Schema<IUserModel>({
+  admin: Boolean,
   profile:{
     first_name: {
       type: String,
@@ -108,5 +110,3 @@ export const UserSchema = new Schema<IUserModel>({
   autoIndex: true,
   timestamps: true,
 });
-
-export const UserModel = model('userModel', UserSchema, 'users');

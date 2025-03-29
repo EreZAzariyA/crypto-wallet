@@ -1,10 +1,10 @@
+import { useEffect } from "react";
+import { RouterProvider } from "react-router-dom";
+import { router } from "./routes";
 import { getThemeConfig } from "./utils/antd";
 import { ConfigProvider, App as AppContainer } from "antd";
 import il from 'antd/locale/he_IL';
 import en from 'antd/locale/en_US';
-import { useEffect } from "react";
-import { RouterProvider } from "react-router-dom";
-import { routes } from "./routes";
 
 const App = () => {
   const theme = 'light';
@@ -28,7 +28,7 @@ const App = () => {
       locale={locale}
     >
       <AppContainer>
-        <RouterProvider router={routes} />
+        <RouterProvider router={router} />
       </AppContainer>
     </ConfigProvider>
   );

@@ -1,8 +1,9 @@
 import mongoose, { Document, model, Schema } from "mongoose"
-import { CoinTypes } from "../bll/wallets";
+import { CoinTypes } from "../bll";
 
 export interface IWalletModel extends Document {
-  name: string;
+  name: CoinTypes;
+  network?: string;
   user_id: mongoose.Schema.Types.ObjectId;
   isTestNet: boolean;
   privateKey: string;
@@ -12,11 +13,12 @@ export interface IWalletModel extends Document {
   walletBalance: number;
 };
 
-const WalletSchema = new Schema<IWalletModel>({
+export const WalletSchema = new Schema<IWalletModel>({
   name: {
     type: String,
     required: true
   },
+  network: String,
   user_id: {
     type: Schema.Types.ObjectId,
     required: true
@@ -53,6 +55,3 @@ const WalletSchema = new Schema<IWalletModel>({
   timestamps: true,
   autoIndex: true
 });
-
-const Wallets = model<IWalletModel>('wallet', WalletSchema, 'wallets');
-export default Wallets;

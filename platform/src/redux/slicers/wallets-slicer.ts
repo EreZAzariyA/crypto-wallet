@@ -1,6 +1,6 @@
 import { ActionReducerMapBuilder, createSlice, SerializedError } from '@reduxjs/toolkit'
 import { WalletModel } from '../../models';
-import { createWalletAction, getUserWalletsAction } from '../actions/wallets-actions';
+import { createWalletAction, getUserWalletsAction, sendCoinsAction } from '../actions/wallets-actions';
 
 export interface WalletsState {
   wallets: Record<string, WalletModel>;
@@ -39,11 +39,11 @@ const extraReducers = (builder: ActionReducerMapBuilder<WalletsState>) => {
     }
   });
 
-  builder.addCase(createWalletAction.pending, (state) => ({
-    ...state,
-    loading: true
-  }))
-  .addCase(createWalletAction.rejected, (state, { error}) => ({
+  // builder.addCase(createWalletAction.pending, (state) => ({
+  //   ...state,
+  //   loading: true
+  // }))
+  builder.addCase(createWalletAction.rejected, (state, { error}) => ({
     ...state,
     loading: false,
     error: error
@@ -52,6 +52,27 @@ const extraReducers = (builder: ActionReducerMapBuilder<WalletsState>) => {
     ...state,
     loading: false,
     wallets: { ...state.wallets, [meta.arg.coin]: payload }
+  }));
+
+  builder.addCase(sendCoinsAction.rejected, (state, action) => ({
+    ...state,
+    loading: false,
+    error: action.error
+  }))
+  .addCase(sendCoinsAction.pending, (state) => ({
+    ...state,
+    loading: true
+  }))
+  .addCase(sendCoinsAction.fulfilled, (state, action) => ({
+    ...state,
+    loading: false,
+    wallets: {
+      ...state.wallets,
+      [action.meta.arg.wallet.name]: {
+        ...action.meta.arg.wallet,
+        walletBalance: action.meta.arg.wallet.walletBalance - action.meta.arg.amount
+      }
+    }
   }))
 };
 
@@ -61,6 +82,8 @@ const walletsSlicer = createSlice({
   reducers: {
     updateAddress(state, action) {
       const { coin, wallet } = action.payload;
+      console.log({ coin, wallet });
+      
       state.wallets[coin] = wallet;
     },
     clearWallets(state) {

@@ -1,32 +1,32 @@
 import { Middleware } from "@reduxjs/toolkit";
-import socketIo from "../../services/socketServices";
 import { updateAddress } from "../slicers/wallets-slicer";
+import socketServices from "../../services/socketServices";
 
-const socketMiddleware: Middleware = (store) => {
+const socketMiddleware: Middleware = (store) => (next) => (action) => {
   const { dispatch, getState } = store;
-  return (next) => (action: any) => {
-    const socket = socketIo.socket;
-    const { user_id } = getState().auth;
-    socket.auth = { user_id };
+  const socketIo = socketServices;
 
-    socket.on('wallet-balance', ({ coin, wallet }) => {
-      dispatch(updateAddress({ coin, wallet }));
-      console.log('wallet updated');
-    });
+  socketIo.socket.on('wallet-balance', ({ coin, wallet }) => {
+    dispatch(updateAddress({ coin, wallet }));
+    console.log('wallet updated');
+  });
 
-    socket.io.on('reconnect', () => {
-      console.log('Server reconnected...');
-      socketIo.sendHandshake(user_id);
-    });
-    socket.io.on('reconnect_error', (error) => {
-      console.log(`Server reconnect error - ${error?.message}.`);
-    });
-    socket.io.on('reconnect_attempt', (attempt) => {
-      console.log(`Trying to reconnect server - ${attempt} time.`);
-    });
+  socketIo.socket.io.on('reconnect', () => {
+    console.log('Server reconnected...');
+    const { user } = getState().auth;
+    socketIo.sendHandshake(user._id);
+  });
 
-    return next(action);
-  };
+  socketIo.socket.io.on('reconnect_error', (error) => {
+    console.log(`Server reconnect error - ${error?.message}.`);
+  });
+
+  socketIo.socket.io.on('reconnect_attempt', (attempt) => {
+    console.log(`Trying to reconnect server - ${attempt} time.`);
+  });
+
+  next(action);
+
 };
 
 export default socketMiddleware;

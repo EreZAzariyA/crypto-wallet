@@ -1,21 +1,20 @@
-import express, { Request, Response } from 'express';
 import cors from 'cors';
 import http from 'http';
-import authRouter from './routes/authentication';
-import tronRouter from './routes/tron';
-import walletsRouter from './routes/wallets';
-import connectToMongoDB from './dal/dal';
-import config from './utils/config';
-import { errorsHandler, verifyToken } from './middlewares';
-import cronJobs from './workers';
-import { CoinTypes } from './bll/wallets';
-import SocketIo from './dal/socket';
 import cookieParser from 'cookie-parser';
+import express, { Request, Response } from 'express';
+import { SocketIo, connectToMongoDB } from './dal';
+import { authRouter, adminRouter, walletsRouter } from './routes';
+import { errorsHandler, verifyToken } from './middlewares';
+import { CoinTypes } from './bll';
+import cronJobs from './workers';
+import config from './utils/config';
+import verifyAdmin from './middlewares/verify-admin';
 
 const app = express();
 const httpServer = http.createServer(app);
 app.use(cookieParser(config.secretKey));
 app.use(express.json());
+
 app.use(cors({
   origin: ['http://localhost:5173', 'http://localhost:5174'],
   credentials: true,
@@ -23,7 +22,7 @@ app.use(cors({
 }));
 
 app.use('/api/auth', authRouter);
-app.use('/api/tron', verifyToken, tronRouter);
+app.use('/api/admin', verifyAdmin, adminRouter);
 app.use('/api/wallet', verifyToken, walletsRouter);
 
 app.use('*', async(_: Request, res: Response) => {

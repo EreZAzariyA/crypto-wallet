@@ -6,14 +6,9 @@
     "categories": "Categories",
     "bankAccount": "Bank Account",
     "profile": "Profile",
-    "account": [
-      "Account",
-      "Profile",
-      "Favorites",
-      "Sign-In",
-      "Sign-Up",
-      "Sign-Out"
-    ]
+    "account": "Account",
+    "users": "Users",
+    "sign-out": "Sign-Out"
   },
   "pages": {
     "dashboard": "Dashboard",

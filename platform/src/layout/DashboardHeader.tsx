@@ -1,15 +1,13 @@
 import "dayjs/locale/he";
 import { useEffect, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import { useAppDispatch, useAppSelector } from "../redux/store";
+import { useLocation } from "react-router-dom";
+import { useAppDispatch } from "../redux/store";
 import { logoutAction } from "../redux/actions/auth-actions";
 import { MenuItem } from "../utils/antd";
 import { useResize } from "../utils/helpers";
 import { Dropdown, Flex, Layout, MenuProps } from "antd";
 import CloseOutlined from "@ant-design/icons/CloseOutlined";
 import MenuOutlined from "@ant-design/icons/MenuOutlined";
-import { getUserWalletsAction } from "../redux/actions/wallets-actions";
-import socketIo from "../services/socketServices";
 
 interface DashboardHeaderProps {
   collapsedHandler?: () => void;
@@ -19,35 +17,24 @@ interface DashboardHeaderProps {
 const { Header } = Layout;
 
 const DashboardHeader = (props: DashboardHeaderProps) => {
-  const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  const { user_id } = useAppSelector((state) => state.auth);
   const { pathname } = useLocation();
+  const { isMobile } = useResize();
   const [current, setCurrent] = useState<string>('1');
   const [isOpen, setIsOpen] = useState(false);
-  const { isMobile } = useResize();
 
   useEffect(() => {
     const locationArray = pathname.split('/');
-    const currentLocation = locationArray[1];
+    const currentLocation = locationArray[locationArray.length - 1];
     setCurrent(currentLocation);
   }, [pathname]);
-  
-  useEffect(() => {
-    if (user_id) {
-      dispatch(getUserWalletsAction(user_id));
-      socketIo.sendHandshake(user_id);
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user_id]);
 
   const onClick: MenuProps['onClick'] = async (e) => {
     if (e.key === 'sign-out') {
       await dispatch(logoutAction()).unwrap();
-      return;
+    } else {
+      setCurrent(e.key);
     }
-    navigate(e.key);
-    setCurrent(e.key);
   };
 
   return (

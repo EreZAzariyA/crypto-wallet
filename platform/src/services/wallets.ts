@@ -16,6 +16,12 @@ class WalletsServices {
     const res = await axios.get<WalletModel[]>(`${config.urls.wallet.getWallets}/${user_id}`);
     const wallets = res.data;
     return wallets;
+  };
+
+  async sendCoins(wallet: WalletModel, to: string, amount: number) {
+    const res = await axios.post(config.urls.wallet.sendCoins, { wallet, to, amount });
+    const data = res.data;
+    return data;
   }
 
 };

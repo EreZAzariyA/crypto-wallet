@@ -1,13 +1,14 @@
 import { Request } from "express";
 import jwt, { VerifyErrors } from "jsonwebtoken";
-import { IUserModel, UserModel } from "../models";
-import { ErrorMessages } from "./helpers";
 import config from "./config";
+import { Users } from "../collections";
+import { IUserModel } from "../models";
+import { ErrorMessages } from "./helpers";
 
 class JWTServices {
   private secretKey: string = config.secretKey;
 
-  public getNewToken(user: IUserModel, customExpiresIn?: number): string {
+  public getNewToken(user: Partial<IUserModel>, customExpiresIn?: number): string {
     const token = jwt.sign(user, this.secretKey, { expiresIn: customExpiresIn || (config.loginExpiresIn / 1000) });
     return token;
   };
@@ -29,11 +30,9 @@ class JWTServices {
           if (err) {
             return reject(ErrorMessages.TOKEN_EXPIRED);
           }
-          console.log(decodedUser);
-          
 
           try {
-            const userPro = await UserModel.findById(decodedUser?._id)
+            const userPro = await Users.findById(decodedUser?._id)
               .select({ services: 0, loginAttempts: 0 })
               .exec();
 
@@ -55,7 +54,7 @@ class JWTServices {
   };
 
   public getUserFromToken(request: Request): IUserModel {
-    const token = request.headers.authorization.substring(7);
+    const token = request.cookies.token;
     const payload = jwt.decode(token);
     const user = (payload as IUserModel);
     return user;

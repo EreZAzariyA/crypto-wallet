@@ -1,15 +1,22 @@
-import { jwtDecode } from 'jwt-decode';
 import { ActionReducerMapBuilder, createSlice, SerializedError } from '@reduxjs/toolkit'
-import { googleSignInAction, logoutAction, signinAction, signupAction } from '../actions/auth-actions';
+import { logoutAction, signinAction, signupAction } from '../actions/auth-actions';
+import { UserModel } from '../../models';
+import Cookies from "js-cookie";
+import { jwtDecode } from 'jwt-decode';
 
 export interface AuthState {
-  user_id: string;
+  user: UserModel;
+  token: string;
   loading: boolean;
   error: SerializedError | null;
 };
 
+const token = Cookies.get('token');
+const user = token ? jwtDecode(token) as UserModel : null;
+
 const initialState: AuthState = {
-  user_id: localStorage.getItem('user_id'),
+  user,
+  token,
   loading: false,
   error: null,
 };
@@ -29,7 +36,8 @@ const extraReducers = (builder: ActionReducerMapBuilder<AuthState>) => {
   .addCase(signinAction.fulfilled, (_, action) => ({
     loading: false,
     error: null,
-    user_id: action.payload.user_id
+    token: action.payload,
+    user: jwtDecode(action.payload),
   }));
 
   // Sign-Up
@@ -49,25 +57,25 @@ const extraReducers = (builder: ActionReducerMapBuilder<AuthState>) => {
     error: null,
   }));
 
-  // Google Sign-In
-  builder.addCase(googleSignInAction.pending, (state) => ({
-    ...state,
-    loading: true,
-    error: null
-  }))
-  .addCase(googleSignInAction.rejected, (state, action) => ({
-    ...state,
-    loading: false,
-    error: action.error
-  }))
-  .addCase(googleSignInAction.fulfilled, (_, action) => {
-    localStorage.setItem('token', action.payload);
-    return {
-      loading: false,
-      error: null,
-      user_id: jwtDecode(action.payload),
-    }
-  });
+  // // Google Sign-In
+  // builder.addCase(googleSignInAction.pending, (state) => ({
+  //   ...state,
+  //   loading: true,
+  //   error: null
+  // }))
+  // .addCase(googleSignInAction.rejected, (state, action) => ({
+  //   ...state,
+  //   loading: false,
+  //   error: action.error
+  // }))
+  // .addCase(googleSignInAction.fulfilled, (_, action) => {
+  //   localStorage.setItem('token', action.payload);
+  //   return {
+  //     loading: false,
+  //     error: null,
+  //     user: action.payload,
+  //   }
+  // });
 
   // Logout
   builder.addCase(logoutAction.pending, (state) => ({
@@ -84,7 +92,8 @@ const extraReducers = (builder: ActionReducerMapBuilder<AuthState>) => {
     ...state,
     loading: false,
     error: null,
-    user_id: null
+    user: null,
+    token: null
   }));
 };
 

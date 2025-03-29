@@ -1,7 +1,10 @@
-import dal from './dal';
 import tronWeb from './tronweb';
+import connectToMongoDB from './dal';
+import SocketIo from './socket';
+export * from './web3';
 
 export {
-  dal,
-  tronWeb
+  tronWeb,
+  connectToMongoDB,
+  SocketIo
 };

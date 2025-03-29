@@ -1,9 +1,11 @@
 export enum CoinsType {
-  TRX = 'TRX',
-  ETH = 'ETH'
+  TRX = "TRX",
+  ETH = "ETH",
+  USDT_ERC20 = "USDT_ERC20",
+  USDC_ERC20 = "USDC_ERC20",
+  USDT_TRC20 = "USDT_TRC20",
+  USDC_TRC20 = "USDC_TRC20",
 };
-
-
 
 export enum TotalAmountType {
   SPENT = 'spent',

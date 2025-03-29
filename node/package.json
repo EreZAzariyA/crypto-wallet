@@ -9,6 +9,7 @@
   "dependencies": {
     "axios": "^1.8.4",
     "bcrypt": "^5.1.1",
+    "bn.js": "^5.2.1",
     "bunyan": "^1.8.15",
     "connect-mongo": "^5.1.0",
     "cookie-parser": "^1.4.7",
@@ -26,6 +27,7 @@
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",
+    "@types/bn.js": "^5.1.6",
     "@types/bunyan": "^1.8.11",
     "@types/cookie-parser": "^1.4.8",
     "@types/cors": "^2.8.17",

@@ -5,9 +5,12 @@ import { CoinsType, ThemeColors } from "./enums";
 
 export const SupportedCoins = [
   CoinsType.TRX,
-  CoinsType.ETH
+  CoinsType.ETH,
+  CoinsType.USDC_ERC20,
+  CoinsType.USDC_TRC20,
+  CoinsType.USDT_ERC20,
+  CoinsType.USDT_TRC20
 ];
-
 
 export type ColorType = {
   ICON: string;
@@ -110,7 +113,6 @@ export const getDataFromStringDate = (stringDate: string): string => {
   return dayjs().set('year', year).set('month', month).format('MM-YYYY');
 };
 
- 
 export const getError = (err: any) => {
   if(typeof err === "string") return err;
   if(typeof err.response?.data === "string") return err.response.data; // axios: 401, 403, 500
@@ -118,3 +120,17 @@ export const getError = (err: any) => {
   if(typeof err.message === "string") return err.message;
   return "Some error, please try again.";
 };
+
+// export const getMenuItems = (isAdmin: boolean) => {
+//   const routes = isAdmin ? AdminRoutes : UserRoutes;
+
+//   const menuItems: MenuItem[] = routes.children.map(({ path }) => {
+//     const pathname = path.split('/')[path.split('/').length - 1];
+//     return {
+//       label: t(`menu.${pathname}`),
+//       key: pathname,
+//     }
+//   });
+
+//   return menuItems;
+// };

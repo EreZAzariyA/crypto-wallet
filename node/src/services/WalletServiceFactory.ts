@@ -1,16 +1,17 @@
-import { CoinTypes } from "../bll/wallets";
+import { CoinTypes, getNetworkByCoin } from "../bll/wallets";
 import { ClientError } from "../models";
-import ETHService from "./EthService";
-import TronService from "./TronService";
+import ETHBaseService from "./ETHBaseService";
+import TronBaseService from "./TronBaseService";
 import { Service } from "./WalletBaseService";
 
 class WalletServiceFactory {
   static createService(coin: CoinTypes): Service {
-    switch (coin) {
+    const network = getNetworkByCoin(coin);
+    switch (network) {
       case CoinTypes.TRX:
-        return new TronService();
+        return new TronBaseService();
       case CoinTypes.ETH:
-        return new ETHService();
+        return new ETHBaseService();
       default:
         throw new ClientError(400, `Unsupported coin type: ${coin}`);
     }
