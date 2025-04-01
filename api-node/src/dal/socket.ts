@@ -1,5 +1,5 @@
 import { Server as HttpServer } from "http";
-import { Server as SocketServer, Socket, Namespace } from "socket.io";
+import { Server as SocketServer, Socket } from "socket.io";
 import { Users } from "../collections";
 import config from "../utils/config";
 

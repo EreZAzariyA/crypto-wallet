@@ -18,6 +18,8 @@ import { useIdleTimer } from "react-idle-timer";
 import socketServices from "../services/socketServices";
 import { getUserWalletsAction } from "../redux/actions/wallets-actions";
 import { AdminRoutes, UserRoutes } from "../routes";
+import { Event, useSocketEvents } from "../hooks/useSocketEvents";
+import { handleRateUpdateAction } from "../redux/slicers/rates-slicer";
 
 const { Sider, Content } = Layout;
 
@@ -53,6 +55,17 @@ const DashboardView = (props: { admin?: boolean }) => {
       socketServices.disconnect(user_id);
     }
   }, []);
+
+  const events: Event[] = [
+    {
+      name: 'ticker',
+      handler: ({ pair, last }) => {
+        const major = pair.split('/')[0];
+        dispatch(handleRateUpdateAction({ coin: major, last }))
+      }
+    }
+  ];
+  useSocketEvents(events);
 
   useEffect(() => {
     if (!admin && user_id) {

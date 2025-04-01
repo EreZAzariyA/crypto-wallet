@@ -3,7 +3,8 @@ import { Link } from "react-router-dom";
 import { WalletModel } from "../../../models";
 import { WithdrawModal } from "../WithdrawModal";
 import { Avatar, Button, Flex, List, Modal, Typography } from "antd";
-import { CoinsType } from "../../../utils/coinsUtils";
+import { CoinsType, getMainCoinByToken } from "../../../utils/coinsUtils";
+import { useAppSelector } from "../../../redux/store";
 
 interface WalletsListItemProps {
   wallet: WalletModel;
@@ -13,6 +14,7 @@ interface WalletsListItemProps {
 
 export const WalletsListItem = (props: WalletsListItemProps) => {
   const { coin, wallet } = props;
+  const rates = useAppSelector((state) => state.rates);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -30,7 +32,7 @@ export const WalletsListItem = (props: WalletsListItemProps) => {
   ] : [
     <Button type="primary" onClick={onCreateWallet} loading={loading}>Create Wallet</Button>
   ];
-  const description = wallet ? wallet.address : `No ${coin} address`;
+  const description = wallet ? wallet.address : `No ${getMainCoinByToken(coin)} address`;
 
   return (
     <>
@@ -40,7 +42,12 @@ export const WalletsListItem = (props: WalletsListItemProps) => {
           title={<span>{coin}</span>}
           description={
             <Flex vertical>
-              {wallet?.walletBalance}
+              <Flex justify="space-between">
+                <Typography.Text>{wallet?.walletBalance || 0} {coin}</Typography.Text>
+                <Typography.Text>
+                  {rates[getMainCoinByToken(coin)] ? `Rate: ${(rates[getMainCoinByToken(coin)] || 0 * wallet?.walletBalance).toFixed(4)} $` : ''}
+                </Typography.Text>
+              </Flex>
               <Typography.Text
                 copyable={!!wallet}
                 children={description}

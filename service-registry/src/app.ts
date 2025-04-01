@@ -1,12 +1,12 @@
 import express from 'express';
 import config from './utils/config';
-import router from './routes/tron';
+import serviceRouter from './routes';
 
 const app = express();
 app.use(express.json());
 
-app.use('/api', router);
+app.use('/', serviceRouter);
 
 app.listen(config.port, () => {
-  console.log(`Listening on port ${config.port}`);
+  config.log.info(`Listening on port: ${config.port} in ${app.get('env')} mode.`);
 });

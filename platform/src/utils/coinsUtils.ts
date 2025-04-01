@@ -14,13 +14,11 @@ export enum CoinsType {
 export const SupportedCoins = [
   CoinsType.TRX,
   CoinsType.ETH,
-  CoinsType.USDT,
-  CoinsType.USDC
+  CoinsType.USDC_ERC20,
+  CoinsType.USDC_TRC20,
+  CoinsType.USDT_ERC20,
+  CoinsType.USDT_TRC20
 ];
-// CoinsType.USDC_ERC20,
-// CoinsType.USDC_TRC20,
-// CoinsType.USDT_ERC20,
-// CoinsType.USDT_TRC20
 
 export const CoinsNames: Partial<Record<CoinsType, string>> = {
   [CoinsType.TRX]: "Tron",
@@ -66,3 +64,11 @@ export const SupportedCoinsByNetworks: Partial<Record<CoinsType, CoinsType[]>> =
   [CoinsType.USDC]: [CoinsType.USDC_ERC20, CoinsType.USDC_TRC20],
   [CoinsType.USDT]: [CoinsType.USDT_ERC20, CoinsType.USDT_TRC20],
 };
+
+export const getMainCoinByToken = (coin: string) => {
+  if (coin.includes('_ERC20') || coin.includes('_TRC20')) {
+    const [token] = coin.split('_');
+    return token;
+  }
+  return coin;
+}

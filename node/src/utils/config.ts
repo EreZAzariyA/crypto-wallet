@@ -48,6 +48,7 @@ class ProductionConfig extends Config {
     this.isProduction = true;
     this.loginExpiresIn = 30 * 60 * 1000;
     this.secretKey = process.env.SECRET_KEY;
+    this.mongoConnectionString = process.env.MONGO_CONNECTION_STRING;
     this.log = getLogger(name, version, getLogLevel(ENV_TYPE.PRODUCTION));
     this.tronNode = {
       isTestNet: false,

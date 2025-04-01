@@ -1,13 +1,15 @@
 import { configureStore } from "@reduxjs/toolkit";
 import authSlicer from "./slicers/auth-slicer";
 import walletSlicer from "./slicers/wallets-slicer";
+import ratesSlicer from "./slicers/rates-slicer";
 import { useDispatch, useSelector } from "react-redux";
 import authMiddleWare from "./middlewares/auth.mw";
 
 const store = configureStore({
   reducer: {
     auth: authSlicer,
-    wallets: walletSlicer
+    wallets: walletSlicer,
+    rates: ratesSlicer
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

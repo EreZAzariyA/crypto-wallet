@@ -4,6 +4,7 @@ import walletServices from "../services/wallets";
 import { WalletModel } from "../models";
 import { queryClient } from "../main";
 import { CoinsType } from "../utils/coinsUtils";
+import { Event, useSocketEvents } from "./useSocketEvents";
 
 interface UseWalletsProps {
   user_id: string;
@@ -27,12 +28,39 @@ export const useWallets = ({ user_id }: Partial<UseWalletsProps>) => {
     },
   });
 
-  const wallets: Record<string, WalletModel> = {};
+  const wallets: Record<string, WalletModel & { rate: number }> = {};
   if (data) {
     data.forEach((wallet) => {
-      wallets[wallet.name] = wallet
+      wallets[wallet.name] = {
+        ...wallet,
+        rate: 0
+      }
     });
   }
+
+  const events: Event[] = [
+    {
+      name: 'admin:wallet:create',
+      handler: (wallet: WalletModel) => {
+        refetch();
+        notification.success({
+          message: `Wallet ${wallet.name} created.`,
+          description: `Admin created ${wallet.name} wallet for you.`
+        });
+      }
+    },
+    {
+      name: 'wallet-balance',
+      handler: ({ coin, wallet, balance }) => {
+        refetch()
+        notification.success({
+          message: `Wallet ${wallet?.name} balance updated.`,
+          description: `Balance for ${coin} updated to ${balance}`
+        });
+      }
+    },
+  ];
+  useSocketEvents(events);
 
   const createWallet = async (coin: CoinsType) => {
     if (!user_id) {
