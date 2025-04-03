@@ -11,6 +11,7 @@ export const Web3Provider = new Web3
 
 export const tronWeb = new TronWeb({
   fullHost: `https://api.${config.isProduction ? '' : 'shasta.'}trongrid.io`,
+  headers: { "TRON-PRO-API-KEY": config.tronNode.key },
   // privateKey: config.tronNode.key
 });
 

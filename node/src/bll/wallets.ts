@@ -4,6 +4,7 @@ import WalletServiceFactory from "../services/WalletServiceFactory";
 import { Wallets, Users } from "../collections";
 import { TransactionReceipt } from "web3";
 import { socket } from "../app";
+import config from "../utils/config";
 
 export enum CoinTypes {
   TRX = "TRX",
@@ -49,7 +50,6 @@ export const isCoinSupported = (coin: CoinTypes): Boolean => {
 };
 
 class WalletsLogic {
-  private socket = socket;
 
   async getUserWallets(user_id: string) {
     if (!Types.ObjectId.isValid(user_id)){

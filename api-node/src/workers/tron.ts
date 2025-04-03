@@ -3,15 +3,15 @@ import Web3 from "web3";
 import config from "../utils/config";
 import { Web3Provider } from "../dal";
 import { Wallets } from "../collections";
-import WalletServiceFactory from "../services/WalletServiceFactory";
 import { scanBlocks } from "../services/ETHBaseService";
 import { CoinTypes } from "../utils/coins";
 import { tronLogic } from "../bll";
 import { isArrayAndNotEmpty } from "../utils/helpers";
+import { ETHService } from "../services";
 
 const updateUsersTronBalance = async () => {
   const coin = CoinTypes.TRX
-  const tronWallets = await Wallets.find({ network: coin }).toArray();
+  const tronWallets = await Wallets.find({ network: coin }).exec();
   if (!isArrayAndNotEmpty(tronWallets)) {
     config.log.info(`No ${coin} wallets to scan...`);
     return;
@@ -29,11 +29,10 @@ const updateUsersTronBalance = async () => {
   }
 };
 const web3 = new Web3(Web3Provider);
-const ethService = WalletServiceFactory.createService(CoinTypes.ETH);
 
 const updateUsersETHBalance = async () => {
-  const coin = ethService.coin;
-  // const ethMainWallets = await Wallets.findOne({ address: '0x5557bfD1BC26Ee1A635dABf451b812A9A888bBA0' }).toArray();
+  const coin = ETHService.coin;
+  // const ethMainWallets = await Wallets.findOne({ address: '0x5557bfD1BC26Ee1A635dABf451b812A9A888bBA0' }).exec();
   // if (ethMainWallets) {
   //   try {
   //     console.log('main wallet found, sending eth...');
@@ -42,7 +41,7 @@ const updateUsersETHBalance = async () => {
   //     console.log({ error });
   //   }
   // }
-  const ethWallets = await Wallets.find({ name: coin }).toArray();
+  const ethWallets = await Wallets.find({ name: coin }).exec();
   if (Array.isArray(ethWallets) && ethWallets.length) {
     for (const wallet of ethWallets) {
       const bigintBalance = await web3.eth.getBalance(wallet.address);

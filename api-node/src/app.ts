@@ -2,6 +2,7 @@ import axios from 'axios';
 import express from 'express';
 import config from './utils/config';
 import router from './routes/tron';
+import walletsRouter from './routes/wallets';
 import cronJobs from './workers';
 import { CoinTypes } from './utils/coins';
 import { mongoose } from './dal';
@@ -12,6 +13,7 @@ app.use(express.json());
 const serviceRegistryUrl = process.env.SERVICE_REGISTRY_URL;
 
 app.use('/api', router);
+app.use('/api/wallets', walletsRouter);
 
 const server = app.listen(0, () => {
   mongoose.connectToMongoDB().then((collectionName) => {

@@ -10,6 +10,10 @@ abstract class Config {
   public loginExpiresIn: number;
   public mongoConnectionString: string;
   public log: Logger;
+  public serviceRegistry: {
+    url: string;
+    version: string;
+  };
 
   public tronNode: {
     isTestNet: boolean;
@@ -31,14 +35,19 @@ class DevelopmentConfig extends Config {
     this.secretKey = 'secret';
     this.mongoConnectionString = "mongodb://127.0.0.1:27017/crypto";
     this.log = getLogger(name, version, getLogLevel(ENV_TYPE.DEVELOPMENT));
+    this.serviceRegistry = {
+      url: 'http://localhost:5001/',
+      version: '1.0.0'
+    };
+
     this.tronNode = {
       isTestNet: true,
       key: 'dd412e64-e48f-4ab3-8cce-1226e8c9a0f4'
-    }
+    };
     this.ethNode = {
       isTestNet: true,
       key: '0262f79ea79e4c54b6a54fce4e363043'
-    }
+    };
   };
 };
 
@@ -50,14 +59,19 @@ class ProductionConfig extends Config {
     this.secretKey = process.env.SECRET_KEY;
     this.mongoConnectionString = process.env.MONGO_CONNECTION_STRING;
     this.log = getLogger(name, version, getLogLevel(ENV_TYPE.PRODUCTION));
+    this.serviceRegistry = {
+      url: process.env.SERVICE_REGISTRY_URL,
+      version: process.env.SERVICE_REGISTRY_VERSION
+    };
+
     this.tronNode = {
       isTestNet: false,
       key: 'dd412e64-e48f-4ab3-8cce-1226e8c9a0f4'
-    }
+    };
     this.ethNode = {
       isTestNet: false,
       key: '0262f79ea79e4c54b6a54fce4e363043'
-    }
+    };
   };
 };
 

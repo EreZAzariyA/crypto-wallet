@@ -45,6 +45,18 @@ export const Trc20ABI = [
     "type": "Function"
   }
 ];
+export const Trc20ABI2 = [
+  {
+    "constant": true,
+    "inputs": [{"name": "account", "type": "address"}],
+    "name": "balanceOf",
+    "outputs": [{"name": "", "type": "uint256"}],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  }
+];
+
 
 export const USDT_ERC20_CONTRACT_ABI = [
   {

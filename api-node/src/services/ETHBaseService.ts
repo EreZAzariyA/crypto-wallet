@@ -1,20 +1,20 @@
 import axios from "axios";
 import Web3, { Transaction, TransactionReceipt, Web3Account } from 'web3';
 import config from "../utils/config";
-import WalletBaseService from "./WalletBaseService";
-import BN from 'bn.js';
-import { Transactions, TransactionsStatus, WalletModel, Wallets } from "../collections";
-import { isArrayAndNotEmpty, USDT_ERC20_CONTRACT_ABI } from "../utils/helpers";
-import { CoinTypes, NetworksList, TransactionType } from "../utils/coins";
 import { Web3Provider } from "../dal";
-import { ClientError } from "../models";
+import { Transactions, Wallets } from "../collections";
+import { ClientError, IWalletModel } from "../models";
+import WalletBaseService from "./WalletBaseService";
+import { isArrayAndNotEmpty, USDT_ERC20_CONTRACT_ABI } from "../utils/helpers";
+import BN from 'bn.js';
+import { CoinTypes, NetworksList, TransactionType } from "../utils/coins";
 
 const ETHERSCAN_API_KEY = "8NBT2T4PQ1QB4UKIJXSAZKSXJPD7N3XYJ4";
 const USDT_ERC20_CONTRACT_ADDRESS = "0xdAC17F958D2ee523a2206206994597C13D831ec7";
 
-const updateWalletLastScannedBlock = async (wallet: WalletModel, lastBlock: number) => {
+const updateWalletLastScannedBlock = async (wallet: IWalletModel, lastBlock: number) => {
   try {
-    await Wallets.updateOne({ address: wallet.address }, { lastScanBlock: lastBlock });
+    await Wallets.updateOne({ address: wallet.address }, { lastScanBlock: lastBlock }).exec();
     config.log.debug(`Wallet ${wallet.address} last scan block updated to ${lastBlock}`);
   } catch (error) {
     throw new ClientError(500, `[EthService.updateWalletLastScannedBlock]: ${error?.message || 'Error'}`);
@@ -120,7 +120,7 @@ const updateWalletLastScannedBlock = async (wallet: WalletModel, lastBlock: numb
 // };
 
 export const scanBlocks = async (web3: Web3) => {
-  const wallets = await Wallets.find({ name: CoinTypes.ETH }).toArray();
+  const wallets = await Wallets.find({ name: CoinTypes.ETH }).exec();
   if (!isArrayAndNotEmpty(wallets)) {
     console.log(`No ETH wallet to scan...`);
     return;
@@ -176,23 +176,22 @@ export const scanBlocks = async (web3: Web3) => {
               ? "completed"
               : "denied";
 
-          await Transactions.insertOne({
-            blockNumber: Number(tnx.blockNumber),
-            coin: CoinTypes.ETH,
-            blockHash: tnx.blockHash,
-            from: tnx.from,
-            hash: tnx.hash,
-            to: tnx.to,
-            transactionIndex: Number(tnx.transactionIndex),
-            amount: isSent
-              ? -Number(web3.utils.fromWei(tnx.value, "ether"))
-              : Number(web3.utils.fromWei(tnx.value, "ether")),
-            type,
-            user_id,
-            status,
-            date,
-          });
-
+          // const addedTransaction = await new Transactions({
+          //   blockNumber: Number(tnx.blockNumber),
+          //   coin: CoinTypes.ETH,
+          //   blockHash: tnx.blockHash,
+          //   from: tnx.from,
+          //   hash: tnx.hash,
+          //   to: tnx.to,
+          //   transactionIndex: Number(tnx.transactionIndex),
+          //   amount: isSent
+          //     ? -Number(web3.utils.fromWei(tnx.value, "ether"))
+          //     : Number(web3.utils.fromWei(tnx.value, "ether")),
+          //   type,
+          //   user_id,
+          //   status,
+          //   date,
+          // }).save();
           // if (!isSent) {
           //   socket.sendMessage('transaction:new', user_id, {
           //     coin: addedTransaction.coin,
@@ -213,7 +212,7 @@ export const scanBlocks = async (web3: Web3) => {
 
   console.log(`Scan blocks done...`);
   try {
-    await Wallets.updateMany({ network: CoinTypes.ETH }, { lastScanBlock: endBlock });
+    await Wallets.updateMany({ network: CoinTypes.ETH }, { lastScanBlock: endBlock }).exec();
   } catch (error) {
     throw new ClientError(500, error?.message);
   }
@@ -232,7 +231,7 @@ const updateWalletBalance = async (
   web3: Web3,
   tx: Transaction,
   receipt: TransactionReceipt,
-  wallet: WalletModel
+  wallet: IWalletModel
 ) => {
   const sentAmount = new BN(tx.value.toString());
 
@@ -251,7 +250,10 @@ const updateWalletBalance = async (
 
   try {
     wallet.walletBalance -= Number(totalSpentInEther);
-    return await Wallets.findOneAndUpdate({ _id: wallet._id }, { $inc: { walletBalance: -Number(totalSpentInEther) } })
+    return await wallet.save({
+      validateBeforeSave: true,
+      timestamps: true,
+    });
   } catch (error) {
     throw new ClientError(
       500,
@@ -269,7 +271,7 @@ class ETHBaseService extends WalletBaseService {
 
   protected web3 = new Web3(Web3Provider);
 
-  async createWallet(user_id: string, coin: CoinTypes): Promise<WalletModel> {
+  async createWallet(user_id: string, coin: CoinTypes): Promise<IWalletModel> {
     let wallet: Web3Account;
     if (!NetworksList.includes(coin)) {
       USDT_ERC20_CONTRACT_ABI
@@ -288,66 +290,66 @@ class ETHBaseService extends WalletBaseService {
       return await this.saveWallet(user_id, newWallet);
   };
 
-  async fetchTransactions(address: string): Promise<Transaction[]> {
-    const lastBlock = await this.web3.eth.getBlockNumber();
-    const ending = Number(lastBlock);
-  
-    const wallet = await Wallets.findOne({ address });
-    const start = wallet?.lastScanBlock || 0;
-    config.log.debug(`Scanning Etherscan API (from block: ${start} to ${ending})...`);
-  
-    try {
-      const apiUrl = `https://api-sepolia.etherscan.io/api?module=account&action=txlist&address=${address}&startblock=${start}&endblock=${ending}&sort=desc&apikey=${ETHERSCAN_API_KEY}`;
-      const res = await axios.get(apiUrl);
-      const response = res.data;
-  
-      if (!response || !response.result || !Array.isArray(response.result)) {
-        config.log.debug(`Etherscan API Error: ${response?.message || "Unknown error"}`);
-        return [];
-      }
-  
-      config.log.debug(`Etherscan API: response ${response.message}`);
-      await updateWalletLastScannedBlock(wallet, ending);
-  
-      const transactions: any[] = response.result;
-      const transactionsToInsert: Transaction[] = transactions.map((trans) => {
-        const status =
-          !isNaN(Number(trans?.confirmations)) && Number(trans?.confirmations) === 0
-            ? TransactionsStatus.Pending
-            : trans.txreceipt_status === "1"
-            ? TransactionsStatus.Success
-            : TransactionsStatus.Denied;
-  
-        return {
-          hash: trans.hash,
-          from: trans.from,
-          to: trans.to,
-          amount: Number(this.web3.utils.fromWei(trans.value, "ether")),
-          blockNumber: Number(trans.blockNumber),
-          date: new Date(Number(trans.timeStamp) * 1000),
-          gasUsed: Number(trans.gasUsed),
-          gasPrice: Number(this.web3.utils.fromWei(trans.gasPrice, "ether")),
-          status,
-          coin: this.coin,
-          user_id: wallet?.user_id || null, // Ensure user_id exists
-        };
-      });
-  
-      // Insert into MongoDB
-      if (transactionsToInsert.length > 0) {
-        const inserted = await Transactions.insertMany(transactionsToInsert as any);
-        config.log.debug(`Imported ${inserted.insertedCount} transactions`);
-      }
-  
-      await updateWalletLastScannedBlock(wallet, ending);
-      return transactionsToInsert;
-    } catch (error) {
-      console.error({ error });
-      throw new ClientError(500, "Error on getTransactions");
-    }
-  }
+  async fetchTransactions(address: string){
+    return []
+    // const lastBlock = await this.web3.eth.getBlockNumber();
+    // const ending = Number(lastBlock);
 
-  async sendCoin(wallet: WalletModel, toAddress: string, amountInEth: number): Promise<{ receipt: TransactionReceipt, wallet: WalletModel }> {
+    // const wallet = await Wallets.findOne({ address }).exec();
+    // const start = wallet?.lastScanBlock || 0;
+    // config.log.debug(`Scanning Etherscan API (from block: ${start} to ${ending})...`);
+
+    // try {
+    //   const apiUrl = `https://api-sepolia.etherscan.io/api?module=account&action=txlist&address=${address}&startblock=${start}&endblock=${ending}&sort=desc&apikey=${ETHERSCAN_API_KEY}`;
+    //   const res = await axios.get(apiUrl);
+    //   const response = res.data;
+      
+    //   if (!response) {
+    //     config.log.debug(`Etherscan API Error: ${response.message || "Unknown error"}`);
+    //     return;
+    //   } else if (response.result && Array.isArray(response.result)) {
+    //     config.log.debug(`Etherscan API: response ${response.message}`);
+    //     await updateWalletLastScannedBlock(wallet, ending);
+    //     return;
+    //   }
+
+    //   const transactions = response.result;
+    //   const transactionsToInsert: ITransaction[] = [];
+
+    //   for (let trans of transactions) {
+    //     if (!isNaN(Number(trans?.confirmations)) && Number(trans?.confirmations) === 0) {
+    //       trans.status = TransactionsStatus.Pending
+    //     } else if (trans.txreceipt_status === "1") {
+    //       trans.status = TransactionsStatus.Success
+    //     } else {
+    //       trans.status = TransactionsStatus.Denied
+    //     }
+        
+    //     const newTrans = new Transactions({
+    //       ...trans,
+    //       coin: this.coin,
+    //       date: new Date(Number(trans.timeStamp) * 1000).toISOString(),
+    //       amount: Number(this.web3.utils.fromWei(trans.value, 'ether'))
+    //     });
+    //     const errors = newTrans.validateSync();
+    //     if (errors) {
+    //       throw new ClientError(500, errors.message);
+    //     }
+
+    //     transactionsToInsert.push(newTrans);
+    //   }
+
+    //   const inserted = await Transactions.insertMany(transactionsToInsert);
+    //   config.log.debug(`Imported ${inserted.length || 0} transactions`);
+    //   await updateWalletLastScannedBlock(wallet, ending);
+    //   return transactionsToInsert;
+    // } catch (error) {
+    //   console.log({ error });
+    //   throw new ClientError(500, 'Error on getTransactions');
+    // }
+  };
+
+  async sendCoin(wallet: IWalletModel, toAddress: string, amountInEth: number): Promise<{ receipt: TransactionReceipt, wallet: IWalletModel }> {
     const value = this.web3.utils.toWei(amountInEth, "ether");
 
     const gasPrice = await this.web3.eth.getGasPrice();

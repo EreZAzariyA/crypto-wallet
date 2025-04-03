@@ -17,9 +17,9 @@ export const NetworksList = [
   CoinTypes.TRX
 ];
 
-const CoinsByNetwork = {
+export const CoinsByNetwork = {
   [CoinTypes.ETH]: [CoinTypes.ETH, CoinTypes.USDC_ERC20, CoinTypes.USDT_ERC20],
-  [CoinTypes.TRX]: [CoinTypes.TRX, CoinTypes.USDC_TRC20, CoinTypes.USDT_TRC20]
+  [CoinTypes.TRX]: [CoinTypes.TRX, CoinTypes.USDT_TRC20, CoinTypes.USDC_TRC20]
 };
 
 export const getNetworkByCoin = (coin: CoinTypes): CoinTypes => {
